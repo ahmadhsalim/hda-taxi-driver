@@ -5,18 +5,27 @@ class ObButton extends StatelessWidget {
   final Function onPressed;
   final String text;
   final Color color;
+  final bool disabled;
+  final FontWeight fontWeight;
 
-  ObButton({this.onPressed, this.text, this.color = MainTheme.primaryColour});
+  ObButton({
+    this.onPressed,
+    this.text,
+    this.color = MainTheme.primaryColour,
+    this.disabled = false,
+    this.fontWeight = FontWeight.normal,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
         height: 56,
         child: FlatButton(
-          onPressed: onPressed,
+          onPressed: disabled ? null : onPressed,
+          disabledColor: color,
           child: Text(
             text,
-            style: TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
+            style: TextStyle(fontWeight: fontWeight, fontSize: 14),
           ),
           color: color,
           textColor: Colors.black,

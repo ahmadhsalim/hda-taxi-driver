@@ -1,8 +1,6 @@
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
-import 'package:hda_app/resources/misc/api-client.dart';
-import 'package:hda_app/resources/misc/base-url.dart';
-import 'package:hda_app/routes/constants.dart';
-import 'package:hda_app/screen-arguments/otp-verify-arguments.dart';
+import 'package:hda_app/models/customer.dart';
+import 'package:hda_app/resources/customer-resource.dart';
 import 'package:hda_app/services/identity-service.dart';
 import 'package:hda_app/services/service-locator.dart';
 import 'package:flutter/material.dart';
@@ -10,39 +8,64 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hda_app/widgets/ob-button.dart';
-import 'package:http/http.dart';
 
 final storage = FlutterSecureStorage();
 
-class SignUpPage extends StatefulWidget {
-  SignUpPage({Key key}) : super(key: key);
+class EditProfilePage extends StatefulWidget {
+  EditProfilePage({Key key}) : super(key: key);
 
   @override
-  _SignUpPageState createState() => _SignUpPageState();
+  _EditProfilePageState createState() => _EditProfilePageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
+class _EditProfilePageState extends State<EditProfilePage> {
   Identity identity = getIt<Identity>();
+  final _key = GlobalKey<ScaffoldState>();
 
-  final GlobalKey<FormState> _signupFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
   TextEditingController nameController;
   TextEditingController mobileNumberController;
-  TextEditingController passwordController;
-  TextEditingController confirmPasswordController;
+  TextEditingController emailController;
+  TextEditingController emergencyContactController;
+
+  bool isUntouched = true;
 
   bool isNameValid = true;
   bool isMobileNumberValid = true;
-  bool isPasswordValid = true;
-  bool isConfirmPasswordValid = true;
+  bool isEmailValid = true;
+  bool isEmergencyContactValid = true;
 
   @override
   initState() {
-    nameController = TextEditingController(text: 'Ahmed Salim');
-    mobileNumberController = TextEditingController(text: '7995343');
-    passwordController = TextEditingController(text: 'password');
-    confirmPasswordController = TextEditingController(text: 'password');
+    identity.getCurrentCustomer().then((value) {
+      setState(() {
+        Customer customer = value;
+        nameController = TextEditingController(text: customer.name);
+        mobileNumberController = TextEditingController(text: customer.mobile);
+        emailController = TextEditingController(text: customer.email);
+        emergencyContactController =
+            TextEditingController(text: customer.emergencyContact);
+      });
+    });
+
     super.initState();
   }
+
+  void displayDialog(context, title, text) => showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: title != null ? Text(title) : null,
+          content: Text(text),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      );
 
   String _nameValidator(String value) {
     setState(() {
@@ -72,31 +95,29 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-  String _passwordValidator(String value) {
+  String _emailValidator(String value) {
     setState(() {
-      isPasswordValid = false;
+      isEmailValid = false;
     });
     if (value == null || value.length == 0) {
-      return 'Password is required';
+      return 'Email is required';
     } else {
       setState(() {
-        isPasswordValid = true;
+        isEmailValid = true;
       });
       return null;
     }
   }
 
-  String _confirmPasswordValidator(String value) {
+  String _emergencyContactValidator(String value) {
     setState(() {
-      isConfirmPasswordValid = false;
+      isEmergencyContactValid = false;
     });
     if (value == null || value.length == 0) {
-      return 'Confirm password is required';
-    } else if (value != passwordController.text) {
-      return 'Passwords do not match';
+      return 'Emergency contact is required';
     } else {
       setState(() {
-        isConfirmPasswordValid = true;
+        isEmergencyContactValid = true;
       });
       return null;
     }
@@ -129,6 +150,7 @@ class _SignUpPageState extends State<SignUpPage> {
     TextEditingController controller,
     String prefixText,
     bool obscureText: false,
+    bool readOnly: false,
     bool isValid: true,
   }) {
     return Column(
@@ -140,6 +162,12 @@ class _SignUpPageState extends State<SignUpPage> {
             child: TextFormField(
           obscureText: obscureText,
           style: TextStyle(fontSize: 14),
+          readOnly: readOnly,
+          onChanged: (value) {
+            setState(() {
+              isUntouched = false;
+            });
+          },
           decoration:
               _buildInputDecoration(prefixText: prefixText, valid: isValid),
           validator: validator,
@@ -149,28 +177,27 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Future<Response> register(String name, String mobile, String password,
-      String confirmPassword) async {
-    ApiClient client = ApiClient('taxi');
-    var res =
-        await client.post(Uri.http(apiHost, "/auth/customer/signup"), body: {
-      "name": name,
-      "mobile": mobile,
-      "password": password,
-      "confirmPassword": confirmPassword
-    });
+  Future<bool> update(
+      String name, String mobile, String email, String emergencyContact) async {
+    CustomerResource resource = CustomerResource();
 
-    if (res.statusCode == 200) return res;
-    return null;
+    return await resource.updateMe(Customer(
+        name: name,
+        mobile: mobile,
+        email: email,
+        emergencyContact: emergencyContact));
   }
 
-  Widget _buildSignupButton(BuildContext context) {
+  Widget _buildUpdateButton(BuildContext context) {
     return Padding(
         padding: const EdgeInsets.only(top: 16),
         child: ObButton(
-          text: 'Sign Up',
+          text: 'Update',
+          color: Color(0xFFE9E9EB),
+          fontWeight: FontWeight.w500,
+          disabled: isUntouched,
           onPressed: () async {
-            bool isValid = _signupFormKey.currentState.validate();
+            bool isValid = _profileFormKey.currentState.validate();
 
             try {
               if (isValid) {
@@ -178,25 +205,37 @@ class _SignUpPageState extends State<SignUpPage> {
                     progressIndicator: CircularProgressIndicator());
                 String name = nameController.text;
                 String mobile = mobileNumberController.text;
-                String password = passwordController.text;
-                String confirmPassword = confirmPasswordController.text;
-                Response res =
-                    await register(name, mobile, password, confirmPassword);
+                String email = emailController.text;
+                String emergencyContact = emergencyContactController.text;
 
-                if (res != null) {
-                  String cookie = res.headers['set-cookie'];
-                  if (cookie != null) {
-                    int index = cookie.indexOf(';');
-                    if (index > -1) cookie = cookie.substring(0, index);
-                  }
-                  Navigator.pushNamed(context, verifyOtpRoute,
-                      arguments: OtpVerifyArguments(mobile, cookie));
+                bool success =
+                    await update(name, mobile, email, emergencyContact);
+
+                if (success) {
+                  _key.currentState.showSnackBar(SnackBar(
+                    content: Text(
+                      'Updated',
+                      // style: TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                    duration: Duration(seconds: 3),
+                    // backgroundColor: MainTheme.primaryColour,
+                  ));
                 } else {
-                  displayDialog(context, "Sign Up", "Unable to register.");
+                  _key.currentState.showSnackBar(SnackBar(
+                    content: Text(
+                      'Update failed.',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                    duration: Duration(seconds: 3),
+                    backgroundColor: Colors.red[700],
+                  ));
+
+                  // displayDialog(context, null, "Unable to register.");
                 }
               }
             } catch (e) {
-              print(e);
+              print([e, 'update failed']);
             } finally {
               if (isValid) Loader.hide();
             }
@@ -204,54 +243,45 @@ class _SignUpPageState extends State<SignUpPage> {
         ));
   }
 
-  Widget _buildAlreadyRegisteredButton(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: ObButton(
-          color: Colors.white,
-          onPressed: () async {
-            Navigator.pop(context);
-          },
-          text: "Already have an account?",
-        ));
-  }
-
-  // Widget _buildHeader(BuildContext context) {
-  //   return Padding(
-  //       padding: const EdgeInsets.only(top: 20, bottom: 20),
-  //       child: Text(
-  //         'Sign Up',
-  //         textAlign: TextAlign.center,
-  //         style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-  //       ));
-  // }
-
-  Widget _buildFooterText(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          'By tapping "Sign Up", you agree to our Terms of Service, Privacy Policy and Cookie Policy.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 14, color: Color.fromARGB(255, 200, 199, 204)),
-        ));
-  }
-
-  void displayDialog(context, title, text) => showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(title),
-          content: Text(text),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Ok'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+  Widget _buildProfilePhoto() {
+    return Center(
+      child: Container(
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(100)),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  offset: Offset(0, 5),
+                  blurRadius: 10)
+            ]),
+        height: 100,
+        width: 100,
+        // margin: const EdgeInsets.all(18),
+        child: Center(
+          child: Icon(
+            Icons.account_circle,
+            size: 98,
+            color: Colors.grey[300],
+          ),
         ),
-      );
+      ), //Image(image: AssetImage('assets/logo.png')),
+    );
+  }
+
+  Widget _buildPhotoUpload(context) {
+    return Center(
+      child: GestureDetector(
+        child: Text(
+          'Update image',
+          style: TextStyle(color: Color(0xFF3F44AB), fontSize: 14),
+        ),
+        onTap: () {
+          displayDialog(context, null, "Coming soon.");
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -264,21 +294,23 @@ class _SignUpPageState extends State<SignUpPage> {
         color: Colors.white,
       ),
       child: Scaffold(
+        key: _key,
         appBar: AppBar(
           elevation: 0,
-          automaticallyImplyLeading: false,
           backgroundColor: Colors.white,
-          title: Center(
-            child: Text(
-              'Sign Up',
-              style: TextStyle(color: Colors.black),
-            ),
+          leading: IconButton(
+              color: Colors.black,
+              icon: Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context)),
+          title: Text(
+            'Edit Profile',
+            style: TextStyle(color: Colors.black),
           ),
         ),
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
           child: Form(
-            key: _signupFormKey,
+            key: _profileFormKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
@@ -296,6 +328,10 @@ class _SignUpPageState extends State<SignUpPage> {
                         children: <Widget>[
                           // _buildHeader(context),
                           SizedBox(height: 16),
+                          _buildProfilePhoto(),
+                          SizedBox(height: 10),
+                          _buildPhotoUpload(context),
+                          SizedBox(height: 16),
                           _buildTextField(
                               label: 'Name',
                               isValid: isNameValid,
@@ -305,27 +341,24 @@ class _SignUpPageState extends State<SignUpPage> {
                           _buildTextField(
                               label: 'Mobile Number',
                               prefixText: '+960 ',
+                              readOnly: true,
                               isValid: isMobileNumberValid,
                               validator: _mobileNumberValidator,
                               controller: mobileNumberController),
                           SizedBox(height: 16),
                           _buildTextField(
-                              label: 'Password',
-                              obscureText: true,
-                              isValid: isPasswordValid,
-                              validator: _passwordValidator,
-                              controller: passwordController),
+                              label: 'Email',
+                              isValid: isEmailValid,
+                              validator: _emailValidator,
+                              controller: emailController),
                           SizedBox(height: 16),
                           _buildTextField(
-                              label: 'Confirm Password',
-                              obscureText: true,
-                              isValid: isConfirmPasswordValid,
-                              validator: _confirmPasswordValidator,
-                              controller: confirmPasswordController),
-                          _buildSignupButton(context),
+                              label: 'Emergency Contact',
+                              isValid: isEmergencyContactValid,
+                              validator: _emergencyContactValidator,
+                              controller: emergencyContactController),
+                          _buildUpdateButton(context),
                           SizedBox(height: 8),
-                          _buildAlreadyRegisteredButton(context),
-                          _buildFooterText(context),
                         ],
                       ),
                     )),

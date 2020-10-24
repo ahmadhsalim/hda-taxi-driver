@@ -1,54 +1,67 @@
-
 import 'dart:convert';
 
-import 'package:hda_app/models/user.dart';
-import 'package:hda_app/resources/user-resource.dart';
+import 'package:hda_app/models/customer.dart';
+import 'package:hda_app/resources/customer-resource.dart';
 import 'package:hda_app/routes/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-
 class Identity {
-
+  static String customerKey = "customer";
   FlutterSecureStorage storage = FlutterSecureStorage();
 
-  User _user;
+  Customer _customer;
 
   bool isAuthenticated() {
-    return _user != null;
+    return _customer != null;
+  }
+
+  Future<bool> hasAuthentication() async {
+    // await storage.delete(key: customerKey);
+    String customer = await storage.read(key: customerKey);
+
+    if (customer == null) {
+      _customer = null;
+      return false;
+    } else {
+      Map<String, dynamic> decoded = json.decode(customer);
+      _customer = Customer.fromJson(decoded);
+      return true;
+    }
   }
 
   authenticateJwt(String jwt) async {
     Map<String, dynamic> value = json.decode(
-      ascii.decode(
-        base64.decode(base64.normalize(jwt.split(".")[1]))
-      )
-    );
+        ascii.decode(base64.decode(base64.normalize(jwt.split(".")[1]))));
 
-    _user = User.fromJson(value);
-    _user.token = jwt;
-    storage.write(key: "user", value: _user.toString());
+    value['token'] = jwt;
+    _customer = Customer.fromJson(value);
+    _customer = await getCurrentCustomer();
+    _customer.token = jwt;
+    String encoded = json.encode(_customer.toJson());
+    await storage.write(key: customerKey, value: encoded);
   }
 
-  Future getCurrentUser(List<String> include) async {
-    UserResource resource = UserResource();
+  Future<Customer> getCurrentCustomer({List<String> include}) {
+    CustomerResource resource = CustomerResource();
 
-    var value = await resource.current(include);
-
-    return User.fromJson(value);
+    return resource.current(include: include);
   }
 
-  User getUser() {
-    return _user;
+  Customer getCustomer() {
+    return _customer;
   }
 
   String getToken() {
-    return _user.token;
+    return _customer.token;
   }
 
   logout(context) {
-    _user= null;
-    storage.delete(key: "user");
-    Navigator.pushReplacementNamed(context, signInRoute);
+    _customer = null;
+    storage.delete(key: customerKey);
+    Navigator.pushNamedAndRemoveUntil(
+        context, signInRoute, (Route<dynamic> route) => false);
+
+    // Navigator.pushReplacementNamed(context, signInRoute);
   }
 }

@@ -3,6 +3,8 @@ import 'package:hda_app/pages/splash.dart';
 import 'package:hda_app/routes/Route.dart';
 import 'package:hda_app/services/service-locator.dart';
 
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 void main() {
   setupServiceLocator();
   runApp(HdaApp());
@@ -14,6 +16,7 @@ class HdaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Dhiraagu',
+      navigatorObservers: [routeObserver],
       theme: ThemeData(
         primarySwatch: Colors.deepOrange,
         visualDensity: VisualDensity.adaptivePlatformDensity,

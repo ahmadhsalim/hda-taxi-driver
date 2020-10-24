@@ -1,13 +1,15 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hda_app/main.dart';
 import 'package:hda_app/models/location.dart';
 import 'package:hda_app/resources/misc/resource-collection.dart';
 import 'package:hda_app/resources/vehicle-type-resource.dart';
+import 'package:hda_app/routes/constants.dart';
 import 'package:hda_app/services/identity-service.dart';
 import 'package:hda_app/services/location-service.dart';
 import 'package:hda_app/services/service-locator.dart';
 import 'package:flutter/material.dart';
 import 'package:hda_app/services/trip-service.dart';
-import 'package:hda_app/widgets/ObinovMap.dart';
+import 'package:hda_app/widgets/obinov-map.dart';
 import 'package:hda_app/widgets/ob-button.dart';
 import 'package:overlay_container/overlay_container.dart';
 
@@ -18,15 +20,45 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with RouteAware {
   Key _mapKey = UniqueKey();
   final Identity identity = getIt<Identity>();
   final TripService tripService = getIt<TripService>();
   final VehicleTypeResource vehicleTypeResource = VehicleTypeResource();
 
-  static const START_SELECTION_STATE = 0;
-  static const VEHICLE_SELECTION_STATE = 1;
+  static const OFF_STATE = 0;
+  static const START_SELECTION_STATE = 1;
+  static const VEHICLE_SELECTION_STATE = 2;
   int pageState = START_SELECTION_STATE;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // routeObserver is the global variable we created before
+    routeObserver.subscribe(this, ModalRoute.of(context));
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPushNext() {
+    setState(() {
+      pageState = OFF_STATE;
+    });
+    // Route was pushed onto navigator and is now topmost route.
+  }
+
+  @override
+  void didPopNext() {
+    setState(() {
+      pageState = START_SELECTION_STATE;
+    });
+    // Covering route was popped off the navigator.
+  }
 
   @override
   initState() {
@@ -173,7 +205,7 @@ class _HomePageState extends State<HomePage> {
       case VEHICLE_SELECTION_STATE:
         return SizedBox.shrink();
       default:
-        return null;
+        return SizedBox.shrink();
     }
   }
 
@@ -194,20 +226,23 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   // crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(30)),
-                          border: Border.all(color: Colors.white, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                offset: Offset(0, 5),
-                                blurRadius: 10)
-                          ]),
-                      height: 50,
-                      width: 50,
-                      margin: const EdgeInsets.all(18),
-                      child: Image.asset('assets/Avatar.png'),
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, profileRoute),
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(30)),
+                            border: Border.all(color: Colors.white, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  offset: Offset(0, 5),
+                                  blurRadius: 10)
+                            ]),
+                        height: 50,
+                        width: 50,
+                        margin: const EdgeInsets.all(18),
+                        child: Image.asset('assets/Avatar.png'),
+                      ),
                     ),
                     SizedBox(width: 14),
                     Column(
