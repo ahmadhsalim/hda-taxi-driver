@@ -1,4 +1,5 @@
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hda_app/models/customer.dart';
 import 'package:hda_app/resources/customer-resource.dart';
 import 'package:hda_app/services/identity-service.dart';
@@ -259,10 +260,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
         width: 100,
         // margin: const EdgeInsets.all(18),
         child: Center(
-          child: Icon(
-            Icons.account_circle,
-            size: 98,
-            color: Colors.grey[300],
+          child: SvgPicture.asset(
+            'assets/avatar_placeholder.svg',
+            width: 100,
+            height: 100,
           ),
         ),
       ), //Image(image: AssetImage('assets/logo.png')),

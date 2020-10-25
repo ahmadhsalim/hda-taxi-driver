@@ -1,3 +1,4 @@
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hda_app/main.dart';
 import 'package:hda_app/models/location.dart';
@@ -75,41 +76,6 @@ class _HomePageState extends State<HomePage> with RouteAware {
     super.initState();
   }
 
-  // InputDecoration _buildInputDecoration(String hint, {dark: false}) {
-  //   return InputDecoration(
-  //       enabledBorder: OutlineInputBorder(
-  //           borderSide: BorderSide.none,
-  //           borderRadius: BorderRadius.all(Radius.circular(6))),
-  //       hintText: hint,
-  //       labelStyle: TextStyle(color: Color.fromARGB(255, 233, 233, 233)),
-  //       hintStyle: TextStyle(color: Color.fromARGB(255, 36, 46, 66)),
-  //       focusedBorder: OutlineInputBorder(
-  //           borderSide: BorderSide.none,
-  //           borderRadius: BorderRadius.all(Radius.circular(6))),
-  //       fillColor:
-  //           dark ? MainTheme.textBackgroundDark : MainTheme.textBackgroundLite,
-  //       filled: true);
-  // }
-
-  // Widget _buildStartField() {
-  //   return Expanded(
-  //       child: SizedBox(
-  //           height: 50,
-  //           child: TextField(
-  //             decoration: _buildInputDecoration(""),
-  //             controller: startController,
-  //           )));
-  // }
-
-  // Widget _buildDropOffField() {
-  //   return Expanded(
-  //       child: SizedBox(
-  //           height: 50,
-  //           child: TextField(
-  //             decoration: _buildInputDecoration("I'm going to...", dark: true),
-  //           )));
-  // }
-
   Widget selectStartButton(BuildContext context) {
     return OverlayContainer(
         show: true,
@@ -177,25 +143,6 @@ class _HomePageState extends State<HomePage> with RouteAware {
     setState(() {
       pageState = START_SELECTION_STATE;
     });
-    // double height = MediaQuery.of(context).size.height / 2;
-    // return OverlayContainer(
-    //     show: true,
-    //     position: OverlayContainerPosition(
-    //       0,
-    //       MediaQuery.of(context).size.height,
-    //     ),
-    //     child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-    //       Container(
-    //         height: MediaQuery.of(context).size.height - height,
-    //         width: MediaQuery.of(context).size.width,
-    //         color: Color(0x35000000),
-    //       ),
-    //       Container(
-    //         color: Colors.white,
-    //         width: MediaQuery.of(context).size.width,
-    //         height: height,
-    //       )
-    //     ]));
   }
 
   Widget getOverlay(BuildContext context) {
@@ -241,7 +188,8 @@ class _HomePageState extends State<HomePage> with RouteAware {
                         height: 50,
                         width: 50,
                         margin: const EdgeInsets.all(18),
-                        child: Image.asset('assets/Avatar.png'),
+                        child:
+                            SvgPicture.asset('assets/avatar_placeholder.svg'),
                       ),
                     ),
                     SizedBox(width: 14),
