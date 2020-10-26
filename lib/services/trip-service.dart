@@ -1,5 +1,6 @@
 import 'package:hda_app/models/location.dart';
 import 'package:hda_app/models/trip.dart';
+import 'package:hda_app/models/vehicle-type.dart';
 import 'package:hda_app/services/location-service.dart';
 
 class TripService {
@@ -21,5 +22,13 @@ class TripService {
 
   setStart(Location location) {
     trip.setStart(location);
+  }
+
+  setDropOff(Location location) {
+    trip.setDropOff(location);
+  }
+
+  setVehicleType(VehicleType type) {
+    trip.vehicleType = type;
   }
 }

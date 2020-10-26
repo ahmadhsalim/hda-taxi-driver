@@ -1,11 +1,11 @@
 class Fare {
   int id;
   String type;
-  int minimumFare;
-  int maximumFare;
-  int flagDropFare;
-  int perKmFare;
-  int perMinuteFare;
+  double minimumFare;
+  double maximumFare;
+  double flagDropFare;
+  double perKmFare;
+  double perMinuteFare;
   int serviceProviderId;
   String status;
 
@@ -26,11 +26,11 @@ class Fare {
       return Fare(
         id: json['id'],
         type: json['type'],
-        minimumFare: json['minimumFare'],
-        maximumFare: json['maximumFare'],
-        flagDropFare: json['flagDropFare'],
-        perKmFare: json['perKmFare'],
-        perMinuteFare: json['perMinuteFare'],
+        minimumFare: json['minimumFare'] / 100,
+        maximumFare: json['maximumFare'] / 100,
+        flagDropFare: json['flagDropFare'] / 100,
+        perKmFare: json['perKmFare'] / 100,
+        perMinuteFare: json['perMinuteFare'] / 100,
         serviceProviderId: json['serviceProviderId'],
         status: json['status'],
       );

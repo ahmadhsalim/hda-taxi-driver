@@ -21,9 +21,19 @@ class LocationService {
   }
 
   static CameraPosition getCameraPosition(Position position) {
+    double latitude;
+    double longitude;
+
+    if (position == null) {
+      latitude = defaultPosition.target.latitude;
+      longitude = defaultPosition.target.longitude;
+    } else {
+      latitude = position.latitude;
+      longitude = position.longitude;
+    }
+
     return CameraPosition(
-        target: LatLng(position.latitude, position.longitude),
-        zoom: LocationService.defaultZoom);
+        target: LatLng(latitude, longitude), zoom: LocationService.defaultZoom);
   }
 
   static Future<Location> getLocationAddress(CameraPosition position) async {

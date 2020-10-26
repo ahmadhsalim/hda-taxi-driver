@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hda_app/pages/drop-off-selection.dart';
 import 'package:hda_app/pages/edit-profile.dart';
 import 'package:hda_app/pages/home.dart';
 import 'package:hda_app/pages/otpVerify.dart';
@@ -6,6 +7,7 @@ import 'package:hda_app/pages/pick-location.dart';
 import 'package:hda_app/pages/profile.dart';
 import 'package:hda_app/pages/signIn.dart';
 import 'package:hda_app/pages/signUp.dart';
+import 'package:hda_app/screen-arguments/drop-off-selection-arguments.dart';
 import 'package:hda_app/screen-arguments/otp-verify-arguments.dart';
 import 'package:hda_app/screen-arguments/pick-location-arguments.dart';
 import 'package:hda_app/screen-arguments/sign-in-arguments.dart';
@@ -37,6 +39,10 @@ class Router {
         final PickLocationArguments args = settings.arguments;
         return MaterialPageRoute(
             builder: (_) => PickLocation(cameraPosition: args.position));
+      case dropOffSelectionRoute:
+        final DropOffSelectionArguments args = settings.arguments;
+        return MaterialPageRoute(
+            builder: (_) => DropOffSelectionPage(trip: args.trip));
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(

@@ -9,9 +9,8 @@ class VehicleTypeResource extends AbstractResource {
   @override
   final Function fromJson = VehicleType.fromJson;
 
-  Future<ResourceCollection> onDuty() async {
-    var res = await get("$url/on-duty");
-    print(res);
+  Future<ResourceCollection<VehicleType>> full({params}) async {
+    var res = await get("$url/full", params: params);
     return ResourceCollection.fromJson(res, fromJson);
   }
 }

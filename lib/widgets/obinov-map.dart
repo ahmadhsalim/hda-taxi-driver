@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hda_app/models/trip.dart';
 import 'package:hda_app/services/location-service.dart';
-import 'package:hda_app/services/trip-service.dart';
 
 class ObinovMap extends StatefulWidget {
-  final TripService tripService;
+  final Trip trip;
   final bool myLocationEnabled;
   final int state;
   static const int LOCATION_SELECT_STATE = 0;
@@ -17,23 +17,23 @@ class ObinovMap extends StatefulWidget {
   ObinovMap(
       {Key key,
       this.state = ObinovMap.LOCATION_SELECT_STATE,
-      this.tripService,
-      // this.onAddressLoad,
+      this.trip,
       this.onLocationChanged,
       this.myLocationEnabled = true})
       : super(key: key);
 
   @override
-  State<ObinovMap> createState() => _ObinovMapState(tripService: tripService);
+  State<ObinovMap> createState() => _ObinovMapState(trip: trip);
 }
 
 class _ObinovMapState extends State<ObinovMap> {
-  final TripService tripService;
+  final Trip trip;
   bool isAddressLoading = false;
+  bool hasCameraMoved = false;
 
-  _ObinovMapState({this.tripService}) {
+  _ObinovMapState({this.trip}) {
     cameraPosition =
-        LocationService.getCameraPosition(tripService.trip.start.getPosition());
+        LocationService.getCameraPosition(trip?.start?.getPosition());
 
     LocationService.getLocationAddress(cameraPosition);
   }
@@ -42,13 +42,13 @@ class _ObinovMapState extends State<ObinovMap> {
   CameraPosition cameraPosition;
 
   Map<MarkerId, Marker> getMarkers() {
-    if (tripService.trip == null) return null;
+    if (trip == null) return null;
 
     Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
     final MarkerId markerId = MarkerId('marker_id_1');
     LatLng position = LatLng(
-      tripService.trip.start.latitude,
-      tripService.trip.start.longitude,
+      trip.start.latitude,
+      trip.start.longitude,
     );
 
     if (widget.state == ObinovMap.LOCATION_SELECT_STATE) {
@@ -109,13 +109,13 @@ class _ObinovMapState extends State<ObinovMap> {
               onMapCreated: (GoogleMapController controller) {
                 _controller.complete(controller);
               },
+              onCameraMoveStarted: () => hasCameraMoved = true,
               onCameraMove: (CameraPosition p) {
                 cameraPosition = p;
               },
-              onCameraIdle: () => widget.onLocationChanged(cameraPosition),
-              // onCameraIdle: () async {
-              //   await LocationService.getLocationAddress(cameraPosition);
-              // },
+              onCameraIdle: () {
+                if (hasCameraMoved) widget.onLocationChanged(cameraPosition);
+              },
               markers: markers)),
       seletionMarker
     ]);
