@@ -3,65 +3,64 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:hda_app/models/trip.dart';
-import 'package:hda_app/services/location-service.dart';
 
 class ObinovMap extends StatefulWidget {
-  final Trip trip;
   final bool myLocationEnabled;
-  final int state;
   static const int LOCATION_SELECT_STATE = 0;
   static const int SHOW_DIRECTION_STATE = 1;
   final Function onLocationChanged;
+  final CameraPosition cameraPosition;
+  final int state;
+  final bool selectLocation;
 
   ObinovMap(
       {Key key,
       this.state = ObinovMap.LOCATION_SELECT_STATE,
-      this.trip,
       this.onLocationChanged,
+      this.cameraPosition,
+      this.selectLocation = false,
       this.myLocationEnabled = true})
       : super(key: key);
 
   @override
-  State<ObinovMap> createState() => _ObinovMapState(trip: trip);
+  State<ObinovMap> createState() =>
+      _ObinovMapState(cameraPosition: cameraPosition);
 }
 
 class _ObinovMapState extends State<ObinovMap> {
-  final Trip trip;
   bool isAddressLoading = false;
   bool hasCameraMoved = false;
+  CameraPosition cameraPosition;
+  Completer<GoogleMapController> _controller = Completer();
 
-  _ObinovMapState({this.trip}) {
-    cameraPosition =
-        LocationService.getCameraPosition(trip?.start?.getPosition());
+  _ObinovMapState({this.cameraPosition}) {
+    // cameraPosition =
+    //     LocationService.getCameraPosition(trip?.start?.getPosition());
 
-    LocationService.getLocationAddress(cameraPosition);
+    // LocationService.getLocationAddress(cameraPosition);
   }
 
-  Completer<GoogleMapController> _controller = Completer();
-  CameraPosition cameraPosition;
-
   Map<MarkerId, Marker> getMarkers() {
-    if (trip == null) return null;
+    // if (trip == null) return null;
 
     Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
-    final MarkerId markerId = MarkerId('marker_id_1');
-    LatLng position = LatLng(
-      trip.start.latitude,
-      trip.start.longitude,
-    );
+    // final MarkerId markerId = MarkerId('marker_id_1');
+    // LatLng position = LatLng(
+    //   trip.start.latitude,
+    //   trip.start.longitude,
+    // );
 
-    if (widget.state == ObinovMap.LOCATION_SELECT_STATE) {
-      return markers;
-    }
+    // if (widget.state == ObinovMap.LOCATION_SELECT_STATE) {
+    //   return markers;
+    // }
 
-    final Marker marker = Marker(
-      markerId: markerId,
-      position: position,
-      infoWindow: InfoWindow(title: 'Current Location', snippet: 'Pick-up'),
-    );
+    // final Marker marker = Marker(
+    //   markerId: markerId,
+    //   position: position,
+    //   infoWindow: InfoWindow(title: 'Current Location', snippet: 'Pick-up'),
+    // );
 
-    markers[markerId] = marker;
+    // markers[markerId] = marker;
 
     return markers;
   }
@@ -84,7 +83,7 @@ class _ObinovMapState extends State<ObinovMap> {
     double iconWidth = 39;
     double iconHeight = 53;
 
-    Widget seletionMarker = widget.state == ObinovMap.LOCATION_SELECT_STATE
+    Widget seletionMarker = widget.selectLocation
         ? Positioned(
             top: (mapHeight / 2) - iconHeight,
             right: (mapWidth - iconWidth) / 2,
@@ -111,10 +110,13 @@ class _ObinovMapState extends State<ObinovMap> {
               },
               onCameraMoveStarted: () => hasCameraMoved = true,
               onCameraMove: (CameraPosition p) {
-                cameraPosition = p;
+                if (cameraPosition != null) cameraPosition = p;
               },
               onCameraIdle: () {
-                if (hasCameraMoved) widget.onLocationChanged(cameraPosition);
+                if (widget.selectLocation &&
+                    hasCameraMoved &&
+                    cameraPosition != null)
+                  widget.onLocationChanged(cameraPosition);
               },
               markers: markers)),
       seletionMarker

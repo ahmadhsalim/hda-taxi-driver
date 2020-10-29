@@ -1,18 +1,18 @@
 import 'dart:ui';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hda_app/main.dart';
 import 'package:hda_app/models/location.dart';
 import 'package:hda_app/models/trip.dart';
 import 'package:hda_app/resources/vehicle-type-resource.dart';
 import 'package:hda_app/routes/constants.dart';
+import 'package:hda_app/screen-arguments/book-arguments.dart';
 import 'package:hda_app/services/identity-service.dart';
 import 'package:hda_app/services/location-service.dart';
 import 'package:hda_app/services/service-locator.dart';
 import 'package:flutter/material.dart';
-import 'package:hda_app/services/trip-service.dart';
 import 'package:hda_app/widgets/obinov-map.dart';
 import 'package:hda_app/widgets/ob-button.dart';
-import 'package:intl/intl.dart';
 import 'package:overlay_container/overlay_container.dart';
 
 class DropOffSelectionPage extends StatefulWidget {
@@ -24,30 +24,46 @@ class DropOffSelectionPage extends StatefulWidget {
       _DropOffSelectionPageState(trip: trip);
 }
 
-class _DropOffSelectionPageState extends State<DropOffSelectionPage> {
+class _DropOffSelectionPageState extends State<DropOffSelectionPage>
+    with RouteAware {
   Trip trip;
   final _key = GlobalKey<ScaffoldState>();
   Key _mapKey = UniqueKey();
   final Identity identity = getIt<Identity>();
-  final TripService tripService = getIt<TripService>();
   final VehicleTypeResource vehicleTypeResource = VehicleTypeResource();
-  final NumberFormat nf = NumberFormat.currency(name: 'MVR');
+
+  static const OFF_STATE = 0;
+  static const ON_STATE = 1;
+
+  int pageState = ON_STATE;
+  // final NumberFormat nf = NumberFormat.currency(name: 'MVR');
 
   _DropOffSelectionPageState({this.trip});
 
   @override
-  initState() {
-    tripService.createTrip();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context));
+  }
 
-    LocationService.getCurrentLocation().then((position) async {
-      Location location = await LocationService.getLocationAddress(
-          LocationService.getCameraPosition(position));
-      setState(() {
-        _mapKey = UniqueKey();
-        tripService.setStart(location);
-      });
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPushNext() {
+    setState(() {
+      pageState = OFF_STATE;
     });
-    super.initState();
+  }
+
+  @override
+  void didPopNext() {
+    setState(() {
+      pageState = ON_STATE;
+    });
   }
 
   @override
@@ -91,7 +107,7 @@ class _DropOffSelectionPageState extends State<DropOffSelectionPage> {
                         ),
                         SizedBox(height: 5),
                         Text(
-                          tripService.trip.start.name,
+                          trip.getDropOff()?.name ?? '',
                           style: TextStyle(fontSize: 14),
                         ),
                         SizedBox(height: 15),
@@ -100,32 +116,47 @@ class _DropOffSelectionPageState extends State<DropOffSelectionPage> {
                   ],
                 )),
             Expanded(
-                child: ObinovMap(
-              key: _mapKey,
-              onLocationChanged: (CameraPosition position) async {
-                Location location =
-                    await LocationService.getLocationAddress(position);
-                setState(() {
-                  trip.setDropOff(location);
-                });
-              },
-            )),
-            OverlayContainer(
-              show: true,
-              position: OverlayContainerPosition(
-                0,
-                107,
-              ),
-              child: Container(
-                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                color: Colors.transparent,
-                width: MediaQuery.of(context).size.width,
-                child: ObButton(
-                  text: 'Set drop-off location',
-                  onPressed: () {},
-                ),
+              child: ObinovMap(
+                key: _mapKey,
+                selectLocation: true,
+                cameraPosition: trip.getStartCameraPosition(),
+                onLocationChanged: (CameraPosition position) async {
+                  Location location =
+                      await LocationService.getLocationAddress(position);
+                  setState(() {
+                    trip.setDropOff(location);
+                  });
+                },
               ),
             ),
+            pageState == OFF_STATE
+                ? SizedBox.shrink()
+                : OverlayContainer(
+                    show: true,
+                    position: OverlayContainerPosition(
+                      0,
+                      107,
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.only(
+                          left: 16, right: 16, bottom: 16),
+                      color: Colors.transparent,
+                      width: MediaQuery.of(context).size.width,
+                      child: ObButton(
+                        text: 'Set drop-off location',
+                        onPressed: () {
+                          setState(() {
+                            pageState = OFF_STATE;
+                          });
+                          Navigator.pushNamed(
+                            context,
+                            bookRoute,
+                            arguments: BookArguments(trip),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),

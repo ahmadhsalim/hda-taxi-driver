@@ -1,5 +1,6 @@
 import 'package:hda_app/models/location.dart';
 import 'package:hda_app/models/vehicle-type.dart';
+import 'package:hda_app/services/location-service.dart';
 
 class Trip {
   Location start;
@@ -14,5 +15,17 @@ class Trip {
   setDropOff(Location location) {
     location.type = 'drop-off';
     dropOffs = [location];
+  }
+
+  Location getDropOff() {
+    return dropOffs.length > 0 ? dropOffs[dropOffs.length - 1] : null;
+  }
+
+  getStartCameraPosition() {
+    return LocationService.getCameraPosition(start.getPosition());
+  }
+
+  getDropOffCameraPosition() {
+    return LocationService.getCameraPosition(getDropOff().getPosition());
   }
 }

@@ -6,3 +6,4 @@ const String profileRoute = '/profile';
 const String editProfileRoute = '/profile/edit';
 const String pickLocationRoute = '/pick-location';
 const String dropOffSelectionRoute = '/drop-off-selection';
+const String bookRoute = '/booking';

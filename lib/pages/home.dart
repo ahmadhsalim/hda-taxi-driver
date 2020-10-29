@@ -14,6 +14,7 @@ import 'package:hda_app/services/identity-service.dart';
 import 'package:hda_app/services/location-service.dart';
 import 'package:hda_app/services/service-locator.dart';
 import 'package:flutter/material.dart';
+import 'package:hda_app/styles/MainTheme.dart';
 import 'package:hda_app/widgets/obinov-map.dart';
 import 'package:hda_app/widgets/ob-button.dart';
 import 'package:intl/intl.dart';
@@ -39,6 +40,7 @@ class _HomePageState extends State<HomePage> with RouteAware {
   static const VEHICLE_SELECTION_STATE = 2;
   int pageState = START_SELECTION_STATE;
   bool isCurrentLocation = true;
+  bool isLoadingLocation = false;
 
   @override
   void didChangeDependencies() {
@@ -68,6 +70,7 @@ class _HomePageState extends State<HomePage> with RouteAware {
 
   @override
   initState() {
+    isLoadingLocation = true;
     trip = Trip();
     trip.start = Location(
         name: 'Pick-up',
@@ -76,15 +79,21 @@ class _HomePageState extends State<HomePage> with RouteAware {
         type: 'start');
 
     LocationService.getCurrentLocation().then((position) async {
-      Location location = await LocationService.getLocationAddress(
-          LocationService.getCameraPosition(position));
-      setState(() {
-        _mapKey = UniqueKey();
-        trip.setStart(location);
-        // tripService.setStart(location);
-      });
+      await setCameraPosition(LocationService.getCameraPosition(position));
+    }).catchError((onError) async {
+      print(onError);
+      await setCameraPosition(LocationService.defaultPosition);
     });
     super.initState();
+  }
+
+  Future<void> setCameraPosition(CameraPosition position) async {
+    Location location = await LocationService.getLocationAddress(position);
+    setState(() {
+      _mapKey = UniqueKey();
+      trip.setStart(location);
+      isLoadingLocation = false;
+    });
   }
 
   Widget selectStartButton(BuildContext context) {
@@ -177,6 +186,7 @@ class _HomePageState extends State<HomePage> with RouteAware {
                               ? () {
                                   setState(() {
                                     trip.vehicleType = vehicleType;
+                                    trip.setDropOff(trip.start);
                                     pageState = OFF_STATE;
                                   });
                                   Navigator.pushReplacementNamed(
@@ -284,17 +294,24 @@ class _HomePageState extends State<HomePage> with RouteAware {
                   ],
                 )),
             Expanded(
-                child: ObinovMap(
-              key: _mapKey,
-              onLocationChanged: (CameraPosition position) async {
-                isCurrentLocation = false;
-                Location location =
-                    await LocationService.getLocationAddress(position);
-                setState(() {
-                  trip.setStart(location);
-                });
-              },
-            )),
+                child: isLoadingLocation
+                    ? Center(
+                        child: CircularProgressIndicator(
+                            backgroundColor: MainTheme.primaryColour))
+                    : ObinovMap(
+                        key: _mapKey,
+                        selectLocation: true,
+                        cameraPosition: trip?.getStartCameraPosition(),
+                        onLocationChanged: (CameraPosition position) async {
+                          isCurrentLocation = false;
+                          Location location =
+                              await LocationService.getLocationAddress(
+                                  position);
+                          setState(() {
+                            trip.setStart(location);
+                          });
+                        },
+                      )),
             overlay,
           ],
         ),
