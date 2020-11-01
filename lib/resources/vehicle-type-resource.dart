@@ -1,6 +1,6 @@
-import 'package:hda_app/models/vehicle-type.dart';
-import 'package:hda_app/resources/misc/abstract-resource.dart';
-import 'package:hda_app/resources/misc/resource-collection.dart';
+import 'package:hda_driver/models/vehicle-type.dart';
+import 'package:hda_driver/resources/misc/abstract-resource.dart';
+import 'package:hda_driver/resources/misc/resource-collection.dart';
 
 class VehicleTypeResource extends AbstractResource {
   @override

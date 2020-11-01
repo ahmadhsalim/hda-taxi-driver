@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:hda_app/models/customer.dart';
-import 'package:hda_app/resources/customer-resource.dart';
-import 'package:hda_app/routes/constants.dart';
+import 'package:hda_driver/models/customer.dart';
+import 'package:hda_driver/resources/customer-resource.dart';
+import 'package:hda_driver/routes/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 

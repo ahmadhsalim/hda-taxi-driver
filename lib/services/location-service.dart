@@ -1,6 +1,6 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:hda_app/models/location.dart';
+import 'package:hda_driver/models/location.dart';
 
 class LocationService {
   static final double defaultZoom = 16;

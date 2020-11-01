@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hda_app/pages/splash.dart';
-import 'package:hda_app/routes/Route.dart';
-import 'package:hda_app/services/service-locator.dart';
+import 'package:hda_driver/pages/splash.dart';
+import 'package:hda_driver/routes/Route.dart';
+import 'package:hda_driver/services/service-locator.dart';
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 

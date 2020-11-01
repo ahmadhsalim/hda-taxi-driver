@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:hda_app/resources/misc/api-client.dart';
-import 'package:hda_app/resources/misc/base-url.dart';
-import 'package:hda_app/resources/misc/paged-collection.dart';
-import 'package:hda_app/services/identity-service.dart';
-import 'package:hda_app/services/service-locator.dart';
+import 'package:hda_driver/resources/misc/api-client.dart';
+import 'package:hda_driver/resources/misc/base-url.dart';
+import 'package:hda_driver/resources/misc/paged-collection.dart';
+import 'package:hda_driver/services/identity-service.dart';
+import 'package:hda_driver/services/service-locator.dart';
 import 'package:http/http.dart';
 
 class AbstractResource {

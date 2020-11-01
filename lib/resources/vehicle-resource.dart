@@ -1,5 +1,5 @@
-import 'package:hda_app/models/vehicle.dart';
-import 'package:hda_app/resources/misc/abstract-resource.dart';
+import 'package:hda_driver/models/vehicle.dart';
+import 'package:hda_driver/resources/misc/abstract-resource.dart';
 
 class VehicleResource extends AbstractResource {
   @override

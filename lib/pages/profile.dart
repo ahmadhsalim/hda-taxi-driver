@@ -1,8 +1,8 @@
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:hda_app/models/customer.dart';
-import 'package:hda_app/routes/constants.dart';
-import 'package:hda_app/services/identity-service.dart';
-import 'package:hda_app/services/service-locator.dart';
+import 'package:hda_driver/models/customer.dart';
+import 'package:hda_driver/routes/constants.dart';
+import 'package:hda_driver/services/identity-service.dart';
+import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';

@@ -1,6 +1,6 @@
-import 'package:hda_app/models/location.dart';
-import 'package:hda_app/models/vehicle-type.dart';
-import 'package:hda_app/services/location-service.dart';
+import 'package:hda_driver/models/location.dart';
+import 'package:hda_driver/models/vehicle-type.dart';
+import 'package:hda_driver/services/location-service.dart';
 
 class Trip {
   Location start;

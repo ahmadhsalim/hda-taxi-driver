@@ -1,14 +1,14 @@
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:hda_app/models/customer.dart';
-import 'package:hda_app/resources/customer-resource.dart';
-import 'package:hda_app/services/identity-service.dart';
-import 'package:hda_app/services/service-locator.dart';
+import 'package:hda_driver/models/customer.dart';
+import 'package:hda_driver/resources/customer-resource.dart';
+import 'package:hda_driver/services/identity-service.dart';
+import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:hda_app/widgets/ob-button.dart';
+import 'package:hda_driver/widgets/ob-button.dart';
 
 final storage = FlutterSecureStorage();
 

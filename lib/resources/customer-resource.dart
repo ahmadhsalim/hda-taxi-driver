@@ -1,5 +1,5 @@
-import 'package:hda_app/models/customer.dart';
-import 'package:hda_app/resources/misc/abstract-resource.dart';
+import 'package:hda_driver/models/customer.dart';
+import 'package:hda_driver/resources/misc/abstract-resource.dart';
 
 class CustomerResource extends AbstractResource {
   @override

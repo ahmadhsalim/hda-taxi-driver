@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:hda_app/models/fare.dart';
+import 'package:hda_driver/models/fare.dart';
 
 class VehicleType {
   int id;

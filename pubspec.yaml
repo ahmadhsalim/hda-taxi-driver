@@ -1,5 +1,5 @@
-name: hda_app
-description: HDA Taxi App
+name: hda_driver
+description: HDA Taxi Driver App
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.

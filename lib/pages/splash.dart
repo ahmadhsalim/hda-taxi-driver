@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:hda_app/routes/constants.dart';
-import 'package:hda_app/services/identity-service.dart';
-import 'package:hda_app/services/service-locator.dart';
+import 'package:hda_driver/routes/constants.dart';
+import 'package:hda_driver/services/identity-service.dart';
+import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
 
 class SplashPage extends StatefulWidget {

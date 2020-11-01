@@ -2,14 +2,14 @@ import 'dart:ui';
 
 import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:hda_app/models/trip.dart';
-import 'package:hda_app/resources/vehicle-type-resource.dart';
-import 'package:hda_app/services/identity-service.dart';
-import 'package:hda_app/services/service-locator.dart';
+import 'package:hda_driver/models/trip.dart';
+import 'package:hda_driver/resources/vehicle-type-resource.dart';
+import 'package:hda_driver/services/identity-service.dart';
+import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
-import 'package:hda_app/styles/MainTheme.dart';
-import 'package:hda_app/widgets/ob-button.dart';
-import 'package:hda_app/widgets/obinov-map.dart';
+import 'package:hda_driver/styles/MainTheme.dart';
+import 'package:hda_driver/widgets/ob-button.dart';
+import 'package:hda_driver/widgets/obinov-map.dart';
 import 'package:intl/intl.dart';
 
 class BookPage extends StatefulWidget {
