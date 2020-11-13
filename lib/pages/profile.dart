@@ -1,5 +1,5 @@
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:hda_driver/models/customer.dart';
+import 'package:hda_driver/models/driver.dart';
 import 'package:hda_driver/routes/constants.dart';
 import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
@@ -20,13 +20,13 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   Identity identity = getIt<Identity>();
   final _key = GlobalKey<ScaffoldState>();
-  Customer customer;
+  Driver driver;
 
   @override
   initState() {
-    identity.getCurrentCustomer().then((value) {
+    identity.getCurrentDriver().then((value) {
       setState(() {
-        customer = value;
+        driver = value;
       });
     });
 

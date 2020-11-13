@@ -15,7 +15,7 @@ class HdaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dhiraagu',
+      title: 'HDA Driver',
       navigatorObservers: [routeObserver],
       theme: ThemeData(
         primarySwatch: Colors.deepOrange,

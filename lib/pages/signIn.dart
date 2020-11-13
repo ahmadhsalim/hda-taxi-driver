@@ -4,6 +4,7 @@ import 'package:hda_driver/resources/misc/api-client.dart';
 import 'package:hda_driver/resources/misc/base-url.dart';
 import 'package:hda_driver/routes/constants.dart';
 import 'package:hda_driver/services/identity-service.dart';
+import 'package:hda_driver/services/navigator-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,8 +35,8 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   initState() {
-    mobileNumberController = TextEditingController(text: '7995343');
-    passwordController = TextEditingController(text: 'password');
+    mobileNumberController = TextEditingController(text: '');
+    passwordController = TextEditingController(text: '');
 
     super.initState();
   }
@@ -116,8 +117,10 @@ class _SignInPageState extends State<SignInPage> {
 
   Future<String> attemptSignIn(String mobileNumber, String password) async {
     ApiClient client = ApiClient('taxi');
-    var res = await client.post(Uri.http(apiHost, "/auth/customer/signin"),
-        body: {"mobile": mobileNumber, "password": password});
+    var res = await client.post(
+      Uri.http(apiHost, "/auth/driver/signin"),
+      body: json.encode({"mobile": mobileNumber, "password": password}),
+    );
 
     if (res.statusCode == 200) return res.body;
     return null;
@@ -128,6 +131,7 @@ class _SignInPageState extends State<SignInPage> {
         padding: const EdgeInsets.only(top: 16),
         child: ObButton(
           text: 'Sign In',
+          filled: true,
           onPressed: () async {
             bool isValid = _signinFormKey.currentState.validate();
             try {
@@ -140,7 +144,7 @@ class _SignInPageState extends State<SignInPage> {
 
                 if (jwt != null) {
                   await identity.authenticateJwt(json.decode(jwt)["token"]);
-                  Navigator.pushReplacementNamed(context, homeRoute);
+                  goToStart(context);
                 } else {
                   displayDialog(context, "Sign in",
                       "Incorrect mobile number or password");
@@ -159,7 +163,7 @@ class _SignInPageState extends State<SignInPage> {
     return Padding(
         padding: const EdgeInsets.only(top: 4),
         child: ObButton(
-          color: Colors.white,
+          filled: false,
           onPressed: () async {},
           text: "Forgot password?",
         ));
@@ -167,7 +171,7 @@ class _SignInPageState extends State<SignInPage> {
 
   Widget _buildCreateAccountButton(BuildContext context) {
     return ObButton(
-      color: Colors.white,
+      filled: false,
       onPressed: () async {
         Navigator.pushNamed(context, signUpRoute);
       },

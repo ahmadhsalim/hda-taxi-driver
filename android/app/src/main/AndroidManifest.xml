@@ -14,6 +14,11 @@
             android:value="AIzaSyDuoPb3Do5LEqOf6TuMSr8YUOc5UplPi2s" />
 
         <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+
+        <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"

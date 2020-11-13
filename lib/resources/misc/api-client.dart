@@ -8,6 +8,7 @@ class ApiClient extends http.BaseClient {
 
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     request.headers['authorization'] = "Bearer $token";
+    request.headers['content-type'] = 'application/json';
     return _inner.send(request);
   }
 }

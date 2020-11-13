@@ -35,8 +35,18 @@ class AbstractResource {
   }
 
   Future put(String url, {data, params}) async {
-    Response res = await client
-        .put(Uri.http(getUrlPrefix(), baseUrl + url, params), body: data);
+    Response res = await client.put(
+        Uri.http(getUrlPrefix(), baseUrl + url, params),
+        body: data == null ? null : json.encode(data));
+
+    if (res.statusCode == 200) return json.decode(res.body);
+    return null;
+  }
+
+  Future post(String url, {data, params}) async {
+    Response res = await client.post(
+        Uri.http(getUrlPrefix(), baseUrl + url, params),
+        body: json.encode(data).toString());
 
     if (res.statusCode == 200) return json.decode(res.body);
     return null;

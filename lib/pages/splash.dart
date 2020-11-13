@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:hda_driver/routes/constants.dart';
 import 'package:hda_driver/services/identity-service.dart';
+import 'package:hda_driver/services/navigator-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +21,7 @@ class _SplashPageState extends State<SplashPage> {
     scheduleMicrotask(() {
       identity.hasAuthentication().then((value) {
         if (value) {
-          Navigator.pushReplacementNamed(context, homeRoute);
+          goToStart(context);
         } else {
           Navigator.pushReplacementNamed(context, signInRoute);
         }

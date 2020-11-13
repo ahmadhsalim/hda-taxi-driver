@@ -38,4 +38,20 @@ class VehicleType {
       return null;
     }
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'icon': icon,
+        'seats': seats,
+        'onDuty': onDuty,
+        'fareId': fareId,
+        'fare': fare != null ? fare.toJson() : null,
+        'serviceProviderId': serviceProviderId,
+      };
+
+  @override
+  String toString() {
+    return id.toString();
+  }
 }

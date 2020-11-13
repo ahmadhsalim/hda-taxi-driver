@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:hda_driver/pages/book.dart';
-import 'package:hda_driver/pages/drop-off-selection.dart';
+import 'package:hda_driver/pages/add-vehicle.dart';
 import 'package:hda_driver/pages/edit-profile.dart';
 import 'package:hda_driver/pages/home.dart';
+import 'package:hda_driver/pages/legal-documents.dart';
 import 'package:hda_driver/pages/otpVerify.dart';
 import 'package:hda_driver/pages/profile.dart';
 import 'package:hda_driver/pages/signIn.dart';
 import 'package:hda_driver/pages/signUp.dart';
-import 'package:hda_driver/screen-arguments/book-arguments.dart';
-import 'package:hda_driver/screen-arguments/drop-off-selection-arguments.dart';
+import 'package:hda_driver/pages/vehicle-form.dart';
+import 'package:hda_driver/pages/vehicle-reviewing.dart';
 import 'package:hda_driver/screen-arguments/otp-verify-arguments.dart';
 import 'package:hda_driver/screen-arguments/sign-in-arguments.dart';
+import 'package:hda_driver/screen-arguments/vehicle-reviewing-arguments.dart';
 import 'constants.dart';
 
 class Router {
@@ -35,17 +36,16 @@ class Router {
         return MaterialPageRoute(
             builder: (_) => OtpVerifyPage(
                 mobileNumber: args.mobileNumber, cookie: args.cookie));
-      // case pickLocationRoute:
-      //   final PickLocationArguments args = settings.arguments;
-      //   return MaterialPageRoute(
-      //       builder: (_) => PickLocation(cameraPosition: args.position));
-      case dropOffSelectionRoute:
-        final DropOffSelectionArguments args = settings.arguments;
+      case addVehicleRoute:
+        return MaterialPageRoute(builder: (_) => AddVehiclePage());
+      case vehicleFormRoute:
+        return MaterialPageRoute(builder: (_) => VehicleFormPage());
+      case documentUploadRoute:
+        return MaterialPageRoute(builder: (_) => LegalDocumentsUploadPage());
+      case vehicleReviewingRoute:
+        final VehicleReviewingArguments args = settings.arguments;
         return MaterialPageRoute(
-            builder: (_) => DropOffSelectionPage(trip: args.trip));
-      case bookRoute:
-        final BookArguments args = settings.arguments;
-        return MaterialPageRoute(builder: (_) => BookPage(trip: args.trip));
+            builder: (_) => VehicleReviewingPage(vehicle: args?.vehicle));
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(

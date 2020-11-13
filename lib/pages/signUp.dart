@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:hda_driver/resources/misc/api-client.dart';
 import 'package:hda_driver/resources/misc/base-url.dart';
@@ -37,10 +39,10 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   initState() {
-    nameController = TextEditingController(text: 'Ahmed Salim');
-    mobileNumberController = TextEditingController(text: '7995343');
-    passwordController = TextEditingController(text: 'password');
-    confirmPasswordController = TextEditingController(text: 'password');
+    nameController = TextEditingController(text: '');
+    mobileNumberController = TextEditingController(text: '');
+    passwordController = TextEditingController(text: '');
+    confirmPasswordController = TextEditingController(text: '');
     super.initState();
   }
 
@@ -149,16 +151,24 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Future<Response> register(String name, String mobile, String password,
-      String confirmPassword) async {
+  Future<Response> register(
+    String name,
+    String mobile,
+    String password,
+    String confirmPassword,
+  ) async {
     ApiClient client = ApiClient('taxi');
-    var res =
-        await client.post(Uri.http(apiHost, "/auth/customer/signup"), body: {
+
+    Map map = {
       "name": name,
       "mobile": mobile,
       "password": password,
       "confirmPassword": confirmPassword
-    });
+    };
+    var res = await client.post(
+      Uri.http(apiHost, "/auth/driver/signup"),
+      body: json.encode(map),
+    );
 
     if (res.statusCode == 200) return res;
     return null;
@@ -208,7 +218,7 @@ class _SignUpPageState extends State<SignUpPage> {
     return Padding(
         padding: const EdgeInsets.only(top: 4),
         child: ObButton(
-          color: Colors.white,
+          filled: false,
           onPressed: () async {
             Navigator.pop(context);
           },

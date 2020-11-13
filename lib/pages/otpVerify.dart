@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:hda_driver/resources/misc/api-client.dart';
 import 'package:hda_driver/resources/misc/base-url.dart';
@@ -104,8 +106,8 @@ class _OtpVerifyPageState extends State<OtpVerifyPage> {
     ApiClient client = ApiClient('taxi');
     Map<String, String> headers = {'cookie': widget.cookie};
     var res = await client.post(
-      Uri.http(apiHost, "/auth/customer/verify-otp"),
-      body: {"otp": otp},
+      Uri.http(apiHost, "/auth/driver/verify-otp"),
+      body: json.encode({"otp": otp}),
       headers: headers,
     );
 

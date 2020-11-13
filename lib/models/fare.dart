@@ -38,4 +38,16 @@ class Fare {
       return null;
     }
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'type': type,
+        'minimumFare': minimumFare,
+        'maximumFare': maximumFare,
+        'flagDropFare': flagDropFare,
+        'perKmFare': perKmFare,
+        'perMinuteFare': perMinuteFare,
+        'serviceProviderId': serviceProviderId,
+        'status': status,
+      };
 }

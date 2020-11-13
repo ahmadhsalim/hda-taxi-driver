@@ -1,7 +1,7 @@
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:hda_driver/models/customer.dart';
-import 'package:hda_driver/resources/customer-resource.dart';
+import 'package:hda_driver/models/driver.dart';
+import 'package:hda_driver/resources/driver-resource.dart';
 import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
@@ -38,14 +38,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   initState() {
-    identity.getCurrentCustomer().then((value) {
+    identity.getCurrentDriver().then((value) {
       setState(() {
-        Customer customer = value;
-        nameController = TextEditingController(text: customer.name);
-        mobileNumberController = TextEditingController(text: customer.mobile);
-        emailController = TextEditingController(text: customer.email);
-        emergencyContactController =
-            TextEditingController(text: customer.emergencyContact);
+        Driver driver = value;
+        nameController = TextEditingController(text: driver.name);
+        mobileNumberController = TextEditingController(text: driver.mobile);
+        emailController = TextEditingController(text: driver.email);
       });
     });
 
@@ -178,15 +176,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Future<bool> update(
-      String name, String mobile, String email, String emergencyContact) async {
-    CustomerResource resource = CustomerResource();
+  Future<bool> update(String name, String mobile, String email) async {
+    DriverResource resource = DriverResource();
 
-    return await resource.updateMe(Customer(
-        name: name,
-        mobile: mobile,
-        email: email,
-        emergencyContact: emergencyContact));
+    return await resource
+        .updateMe(Driver(name: name, mobile: mobile, email: email));
   }
 
   Widget _buildUpdateButton(BuildContext context) {
@@ -207,20 +201,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 String name = nameController.text;
                 String mobile = mobileNumberController.text;
                 String email = emailController.text;
-                String emergencyContact = emergencyContactController.text;
 
-                bool success =
-                    await update(name, mobile, email, emergencyContact);
+                bool success = await update(name, mobile, email);
 
                 if (success) {
                   _key.currentState.showSnackBar(SnackBar(
                     content: Text(
                       'Updated',
-                      // style: TextStyle(color: Colors.white, fontSize: 16),
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                     duration: Duration(seconds: 3),
-                    // backgroundColor: MainTheme.primaryColour,
                   ));
                 } else {
                   _key.currentState.showSnackBar(SnackBar(
