@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hda_driver/widgets/animation-box.dart';
 import 'package:hda_driver/widgets/ob-button.dart';
 import 'package:http/http.dart';
 
@@ -232,11 +233,12 @@ class _OtpVerifyPageState extends State<OtpVerifyPage> {
                         children: <Widget>[
                           _buildHeader(context),
                           SizedBox(height: 16),
-                          SizedBox(
-                            width: 150,
-                            height: 150,
-                            child: Image(image: AssetImage('assets/logo.png')),
-                          ),
+                          AnimationBox(),
+                          // SizedBox(
+                          //   width: 150,
+                          //   height: 150,
+                          //   child: Image(image: AssetImage('assets/logo.png')),
+                          // ),
                           _buildTextField(
                               label: 'OTP Code',
                               isValid: isOtpValid,

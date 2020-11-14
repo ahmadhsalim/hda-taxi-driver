@@ -3,6 +3,7 @@ import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:hda_driver/widgets/animation-box.dart';
 import 'package:hda_driver/widgets/ob-button.dart';
 
 class AddVehiclePage extends StatefulWidget {
@@ -57,13 +58,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                        height: 183,
-                        width: 183,
-                        decoration: BoxDecoration(
-                            color: Color(0xFFE4E4E4),
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(23)))),
+                    AnimationBox(),
                     SizedBox(
                       height: 36,
                     ),

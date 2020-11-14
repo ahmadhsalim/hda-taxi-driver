@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hda_driver/widgets/animation-box.dart';
 import 'package:hda_driver/widgets/ob-button.dart';
 
 final storage = FlutterSecureStorage();
@@ -262,11 +263,12 @@ class _SignInPageState extends State<SignInPage> {
                         children: <Widget>[
                           // _buildHeader(context),
                           SizedBox(height: 16),
-                          SizedBox(
-                            width: 100,
-                            height: 100,
-                            child: Image(image: AssetImage('assets/logo.png')),
-                          ),
+                          AnimationBox(),
+                          // SizedBox(
+                          //   width: 100,
+                          //   height: 100,
+                          //   child: Image(image: AssetImage('assets/logo.png')),
+                          // ),
                           SizedBox(height: 16),
                           _buildMobileNumber(),
                           SizedBox(height: 16),

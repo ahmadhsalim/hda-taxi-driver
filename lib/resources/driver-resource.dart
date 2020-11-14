@@ -79,4 +79,14 @@ class DriverResource extends AbstractResource {
     var res = await post("$url/me/vehicles", data: map);
     return Vehicle.fromJson(res);
   }
+
+  Future online() async {
+    var res = await put("$url/me/online");
+    return res;
+  }
+
+  Future offline() async {
+    var res = await put("$url/me/offline");
+    return res;
+  }
 }

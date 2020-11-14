@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:hda_driver/models/vehicle.dart';
 
 class Driver {
@@ -8,6 +10,8 @@ class Driver {
   List<Vehicle> vehicles;
   DateTime lastLogin;
   String profilePhoto;
+  File profilePhotoFile;
+  String profilePhotoPath;
   String nameOnDriversLicense;
   String driversLicenseNumber;
   String licenseFrontPhoto;
@@ -24,6 +28,8 @@ class Driver {
     this.vehicles,
     this.lastLogin,
     this.profilePhoto,
+    this.profilePhotoFile,
+    this.profilePhotoPath,
     this.nameOnDriversLicense,
     this.driversLicenseNumber,
     this.licenseFrontPhoto,
@@ -49,6 +55,8 @@ class Driver {
             ? null
             : DateTime.parse(json['lastLogin']),
         profilePhoto: json['profilePhoto'],
+        profilePhotoFile: json['profilePhotoFile'],
+        profilePhotoPath: json['profilePhotoPath'],
         nameOnDriversLicense: json['nameOnDriversLicense'],
         driversLicenseNumber: json['driversLicenseNumber'],
         licenseFrontPhoto: json['licenseFrontPhoto'],
@@ -69,6 +77,7 @@ class Driver {
         'email': email,
         'lastLogin': lastLogin != null ? lastLogin.toString() : null,
         'profilePhoto': profilePhoto,
+        'profilePhotoPath': profilePhotoPath,
         'nameOnDriversLicense': nameOnDriversLicense,
         'driversLicenseNumber': driversLicenseNumber,
         'licenseFrontPhoto': licenseFrontPhoto,

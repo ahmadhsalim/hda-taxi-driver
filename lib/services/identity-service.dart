@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:hda_driver/models/driver.dart';
 import 'package:hda_driver/resources/driver-resource.dart';
@@ -25,6 +26,10 @@ class Identity {
     } else {
       Map<String, dynamic> decoded = json.decode(driver);
       _driver = Driver.fromJson(decoded);
+
+      if (_driver.profilePhotoPath != null)
+        _driver.profilePhotoFile = File(_driver.profilePhotoPath);
+
       return true;
     }
   }
@@ -58,6 +63,16 @@ class Identity {
     } else {
       return driver;
     }
+  }
+
+  void setProfilePhoto(String path) {
+    _driver.profilePhotoPath = path;
+    _driver.profilePhotoFile = File(path);
+    store(_driver, _driver.token);
+  }
+
+  File getProfilePhoto() {
+    return _driver.profilePhotoFile;
   }
 
   Driver getDriver() {
