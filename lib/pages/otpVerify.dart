@@ -151,7 +151,7 @@ class _OtpVerifyPageState extends State<OtpVerifyPage> {
     return Padding(
         padding: const EdgeInsets.only(top: 4),
         child: ObButton(
-          color: Colors.white,
+          filled: false,
           onPressed: () async {},
           text: "Didn't receive OTP? Resend OTP",
         ));
@@ -216,41 +216,38 @@ class _OtpVerifyPageState extends State<OtpVerifyPage> {
         body: SingleChildScrollView(
           child: Form(
             key: _otpVerifyFormKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(20.0),
-                          topLeft: Radius.circular(20.0)),
-                      color: Colors.white,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          _buildHeader(context),
-                          SizedBox(height: 16),
-                          AnimationBox(),
-                          // SizedBox(
-                          //   width: 150,
-                          //   height: 150,
-                          //   child: Image(image: AssetImage('assets/logo.png')),
-                          // ),
-                          _buildTextField(
-                              label: 'OTP Code',
-                              isValid: isOtpValid,
-                              validator: _otpValidator,
-                              controller: otpController),
-                          _buildOtpVerifyButton(context),
-                          SizedBox(height: 8),
-                          _buildResendButton(context),
-                        ],
-                      ),
-                    )),
-              ],
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              // decoration: BoxDecoration(
+              //   borderRadius: BorderRadius.only(
+              //       topRight: Radius.circular(20.0),
+              //       topLeft: Radius.circular(20.0)),
+              // ),
+              color: Colors.white,
+              // child: Padding(
+              //   padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                // mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  _buildHeader(context),
+                  SizedBox(height: 16),
+                  SizedBox(
+                    width: 150,
+                    height: 150,
+                    child: Image(image: AssetImage('assets/logo.png')),
+                  ),
+                  _buildTextField(
+                      label: 'OTP Code',
+                      isValid: isOtpValid,
+                      validator: _otpValidator,
+                      controller: otpController),
+                  _buildOtpVerifyButton(context),
+                  SizedBox(height: 8),
+                  _buildResendButton(context),
+                ],
+                // ),
+              ),
             ),
           ),
         ),

@@ -262,13 +262,12 @@ class _SignInPageState extends State<SignInPage> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
                           // _buildHeader(context),
-                          SizedBox(height: 16),
-                          AnimationBox(),
-                          // SizedBox(
-                          //   width: 100,
-                          //   height: 100,
-                          //   child: Image(image: AssetImage('assets/logo.png')),
-                          // ),
+                          // SizedBox(height: 16),
+                          SizedBox(
+                            width: 100,
+                            height: 100,
+                            child: Image(image: AssetImage('assets/logo.png')),
+                          ),
                           SizedBox(height: 16),
                           _buildMobileNumber(),
                           SizedBox(height: 16),
