@@ -14,7 +14,7 @@ import 'package:hda_driver/screen-arguments/sign-in-arguments.dart';
 import 'package:hda_driver/screen-arguments/vehicle-reviewing-arguments.dart';
 import 'constants.dart';
 
-class Router {
+class HdaRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case homeRoute:

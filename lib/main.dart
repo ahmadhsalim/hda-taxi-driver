@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hda_driver/pages/splash.dart';
-import 'package:hda_driver/routes/Route.dart';
+import 'package:hda_driver/routes/hda-router.dart';
 import 'package:hda_driver/services/service-locator.dart';
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
@@ -22,7 +22,7 @@ class HdaApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         canvasColor: Colors.transparent,
       ),
-      onGenerateRoute: Router.generateRoute,
+      onGenerateRoute: HdaRouter.generateRoute,
       home: SplashPage(),
     );
   }
