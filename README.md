@@ -1,6 +1,6 @@
 # hda_driver
 
-HDA Taxi App
+HDA Driver
 
 ## Getting Started
 
