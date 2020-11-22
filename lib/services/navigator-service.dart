@@ -34,17 +34,18 @@ Future goToStart(BuildContext context) async {
     ResourceCollection<Vehicle> collection = await resource.myVehicles();
     if (collection.data.length > 0) {
       if (collection.data[0].isActive()) {
-        getProfilePhoto();
+        await identity.getCurrentDriver(forceAuth: true);
+        await getProfilePhoto();
         return Navigator.pushNamedAndRemoveUntil(
             context, homeRoute, (Route<dynamic> route) => false);
       } else {
         Driver driver = await identity.getCurrentDriver(forceAuth: true);
 
-        if (driver.profilePhoto == null) {
+        if (driver.driversLicenseNumber == null) {
           return Navigator.pushNamedAndRemoveUntil(
               context, documentUploadRoute, (Route<dynamic> route) => false);
         } else {
-          getProfilePhoto();
+          await getProfilePhoto();
           return Navigator.pushNamedAndRemoveUntil(
               context, vehicleReviewingRoute, (Route<dynamic> route) => false,
               arguments: VehicleReviewingArguments(collection.data[0]));

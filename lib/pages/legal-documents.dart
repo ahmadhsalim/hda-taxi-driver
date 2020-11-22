@@ -48,11 +48,11 @@ class _LegalDocumentsUploadPageState extends State<LegalDocumentsUploadPage> {
     return Center(
       child: Column(
         children: [
-          GestureDetector(
+          InkWell(
             onTap: () async {
               if (profilePhotoUpload != null) return;
 
-              imageSelect(context, (File photo) async {
+              imageSelect(context, (File photo) {
                 if (photo != null) {
                   setState(() {
                     profilePhoto = photo;
@@ -128,7 +128,7 @@ class _LegalDocumentsUploadPageState extends State<LegalDocumentsUploadPage> {
 
   Widget _buildDocumentButton(BuildContext context,
       {File image, String label, Function onSelect, double progress}) {
-    return GestureDetector(
+    return InkWell(
       onTap: () => imageSelect(context, (File photo) {
         onSelect(photo);
       }),
