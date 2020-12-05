@@ -11,6 +11,8 @@ class Identity {
   static String driverKey = "driver";
   FlutterSecureStorage storage = FlutterSecureStorage();
 
+  String _firebaseToken;
+
   Driver _driver;
 
   bool isAuthenticated() {
@@ -66,9 +68,13 @@ class Identity {
   }
 
   void setProfilePhoto(String path) {
-    _driver.profilePhotoPath = path;
-    _driver.profilePhotoFile = File(path);
-    store(_driver, _driver.token);
+    try {
+      _driver.profilePhotoPath = path;
+      _driver.profilePhotoFile = File(path);
+      store(_driver, _driver.token);
+    } catch (e) {
+      print(e);
+    }
   }
 
   File getProfilePhoto() {
@@ -88,5 +94,13 @@ class Identity {
     storage.delete(key: driverKey);
     return Navigator.pushNamedAndRemoveUntil(
         context, signInRoute, (Route<dynamic> route) => false);
+  }
+
+  void setFirebaseToken(String token) {
+    _firebaseToken = token;
+  }
+
+  String getFirebaseToken() {
+    return _firebaseToken;
   }
 }

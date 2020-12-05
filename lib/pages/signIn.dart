@@ -35,8 +35,8 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   initState() {
-    mobileNumberController = TextEditingController(text: '');
-    passwordController = TextEditingController(text: '');
+    mobileNumberController = TextEditingController(text: '7888588');
+    passwordController = TextEditingController(text: 'password');
 
     super.initState();
   }

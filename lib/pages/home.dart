@@ -188,7 +188,8 @@ class _HomePageState extends State<HomePage> {
                 : SizedBox.shrink(),
             Expanded(
               child: driver.onDuty
-                  ? onlineDisplay(context)
+                  ? SizedBox.expand()
+                  // ? onlineDisplay(context)
                   : offlineDisplay(context),
             ),
             Container(
