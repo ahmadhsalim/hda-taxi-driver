@@ -33,7 +33,7 @@ class _SplashPageState extends State<SplashPage> {
     // Or do other work.
   }
 
-  void initializeFirebase() {
+  Future initializeFirebase() async {
     firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         print("onMessage: $message");
@@ -56,16 +56,18 @@ class _SplashPageState extends State<SplashPage> {
         .listen((IosNotificationSettings settings) {
       print("Settings registered: $settings");
     });
-    firebaseMessaging.getToken().then((String token) {
-      assert(token != null);
+    String token = await firebaseMessaging.getToken();
+    assert(token != null);
+    setState(() {
       identity.setFirebaseToken(token);
-      setState(() {});
     });
   }
 
   @override
   void initState() {
-    scheduleMicrotask(() {
+    scheduleMicrotask(() async {
+      await initializeFirebase();
+
       identity.hasAuthentication().then((value) {
         if (value) {
           goToStart(context);
@@ -75,7 +77,6 @@ class _SplashPageState extends State<SplashPage> {
       });
     });
 
-    initializeFirebase();
     super.initState();
   }
 

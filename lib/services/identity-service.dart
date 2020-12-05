@@ -58,7 +58,8 @@ class Identity {
       {List<String> include, bool forceAuth = false}) async {
     DriverResource resource = DriverResource();
 
-    Driver driver = await resource.current(include: include);
+    Driver driver =
+        await resource.current(include: include, firebaseToken: _firebaseToken);
     if (forceAuth) {
       await store(driver, _driver.token);
       return _driver;
@@ -68,13 +69,9 @@ class Identity {
   }
 
   void setProfilePhoto(String path) {
-    try {
-      _driver.profilePhotoPath = path;
-      _driver.profilePhotoFile = File(path);
-      store(_driver, _driver.token);
-    } catch (e) {
-      print(e);
-    }
+    _driver.profilePhotoPath = path;
+    _driver.profilePhotoFile = File(path);
+    store(_driver, _driver.token);
   }
 
   File getProfilePhoto() {

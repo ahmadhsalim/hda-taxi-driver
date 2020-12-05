@@ -10,8 +10,12 @@ class DriverResource extends AbstractResource {
   @override
   final Function fromJson = Driver.fromJson;
 
-  Future<Driver> current({List<String> include}) async {
-    var res = await get("$url/me", params: {"include": include?.join(",")});
+  Future<Driver> current({List<String> include, String firebaseToken}) async {
+    assert(firebaseToken != null);
+
+    var res = await get("$url/me",
+        params: {"include": include?.join(",")},
+        headers: {'hda-firebase-token': firebaseToken});
 
     return fromJson(res);
   }

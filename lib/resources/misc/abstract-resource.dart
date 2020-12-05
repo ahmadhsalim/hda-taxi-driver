@@ -26,9 +26,9 @@ class AbstractResource {
     return PagedCollection.fromJson(res, fromJson);
   }
 
-  Future get(String url, {params}) async {
-    Response res =
-        await client.get(Uri.http(getUrlPrefix(), baseUrl + url, params));
+  Future get(String url, {params, Map<String, String> headers}) async {
+    Response res = await client
+        .get(Uri.http(getUrlPrefix(), baseUrl + url, params), headers: headers);
 
     if (res.statusCode == 200) return json.decode(res.body);
     return null;
