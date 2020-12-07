@@ -21,12 +21,17 @@ class AbstractResource {
     client = ApiClient(identity.getToken());
   }
 
+  Future get(int id) async {
+    var res = await httpGet("$url/$id");
+    return fromJson(res);
+  }
+
   Future<PagedCollection> paginate({params}) async {
-    var res = await get(url, params: params);
+    var res = await httpGet(url, params: params);
     return PagedCollection.fromJson(res, fromJson);
   }
 
-  Future get(String url, {params, Map<String, String> headers}) async {
+  Future httpGet(String url, {params, Map<String, String> headers}) async {
     Response res = await client
         .get(Uri.http(getUrlPrefix(), baseUrl + url, params), headers: headers);
 
@@ -34,7 +39,7 @@ class AbstractResource {
     return null;
   }
 
-  Future put(String url, {data, params}) async {
+  Future httpPut(String url, {data, params}) async {
     Response res = await client.put(
         Uri.http(getUrlPrefix(), baseUrl + url, params),
         body: data == null ? null : json.encode(data));
@@ -43,7 +48,7 @@ class AbstractResource {
     return null;
   }
 
-  Future post(String url, {data, params}) async {
+  Future httpPost(String url, {data, params}) async {
     Response res = await client.post(
         Uri.http(getUrlPrefix(), baseUrl + url, params),
         body: json.encode(data).toString());

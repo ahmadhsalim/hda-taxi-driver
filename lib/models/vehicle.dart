@@ -61,11 +61,9 @@ class Vehicle {
         smoking: json['smoking'],
         status: json['status'],
         driverId: json['driverId'],
-        driver: json['driver'] == null ? null : Driver.fromJson(json['driver']),
+        driver: Driver.fromJson(json['driver']),
         vehicleTypeId: json['vehicleTypeId'],
-        vehicleType: json['vehicleType'] == null
-            ? null
-            : VehicleType.fromJson(json['vehicleType']),
+        vehicleType: VehicleType.fromJson(json['vehicleType']),
       );
     } else {
       return null;

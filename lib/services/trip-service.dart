@@ -31,4 +31,6 @@ class TripService {
   setVehicleType(VehicleType type) {
     trip.vehicleType = type;
   }
+
+  // Future<Trip> loadTrip(int id) {}
 }

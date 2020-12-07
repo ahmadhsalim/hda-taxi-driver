@@ -13,7 +13,7 @@ class DriverResource extends AbstractResource {
   Future<Driver> current({List<String> include, String firebaseToken}) async {
     assert(firebaseToken != null);
 
-    var res = await get("$url/me",
+    var res = await httpGet("$url/me",
         params: {"include": include?.join(",")},
         headers: {'hda-firebase-token': firebaseToken});
 
@@ -21,14 +21,14 @@ class DriverResource extends AbstractResource {
   }
 
   Future<ResourceCollection<Vehicle>> myVehicles({List<String> include}) async {
-    var res =
-        await get("$url/me/vehicles", params: {"include": include?.join(",")});
+    var res = await httpGet("$url/me/vehicles",
+        params: {"include": include?.join(",")});
 
     return ResourceCollection.fromJson(res, Vehicle.fromJson);
   }
 
   Future<bool> updateMe(Driver driver) async {
-    var res = await put("$url/me", data: {
+    var res = await httpPut("$url/me", data: {
       'name': driver.name,
       'mobile': driver.mobile,
       'email': driver.email,
@@ -41,7 +41,7 @@ class DriverResource extends AbstractResource {
   }
 
   Future<bool> updateDocuments(Driver driver) async {
-    var res = await put("$url/me", data: {
+    var res = await httpPut("$url/me", data: {
       'profilePhoto': driver.profilePhoto,
       'nameOnDriversLicense': driver.nameOnDriversLicense,
       'driversLicenseNumber': driver.driversLicenseNumber,
@@ -56,7 +56,7 @@ class DriverResource extends AbstractResource {
   }
 
   Future<bool> cancelVehicle(int vehicleId) async {
-    var res = await put("$url/me/vehicles/$vehicleId/cancel");
+    var res = await httpPut("$url/me/vehicles/$vehicleId/cancel");
 
     if (res != null)
       return true;
@@ -80,17 +80,17 @@ class DriverResource extends AbstractResource {
       'vehicleTypeId': vehicle.vehicleTypeId,
     };
 
-    var res = await post("$url/me/vehicles", data: map);
+    var res = await httpPost("$url/me/vehicles", data: map);
     return Vehicle.fromJson(res);
   }
 
   Future online() async {
-    var res = await put("$url/me/online");
+    var res = await httpPut("$url/me/online");
     return res;
   }
 
   Future offline() async {
-    var res = await put("$url/me/offline");
+    var res = await httpPut("$url/me/offline");
     return res;
   }
 }

@@ -9,6 +9,6 @@ class VehicleResource extends AbstractResource {
   final Function fromJson = Vehicle.fromJson;
 
   Future onDuty() {
-    return get("$url/on-duty");
+    return httpGet("$url/on-duty");
   }
 }

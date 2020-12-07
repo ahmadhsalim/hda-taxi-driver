@@ -10,7 +10,7 @@ class VehicleTypeResource extends AbstractResource {
   final Function fromJson = VehicleType.fromJson;
 
   Future<ResourceCollection<VehicleType>> full({params}) async {
-    var res = await get("$url/full", params: params);
+    var res = await httpGet("$url/full", params: params);
     return ResourceCollection.fromJson(res, fromJson);
   }
 }
