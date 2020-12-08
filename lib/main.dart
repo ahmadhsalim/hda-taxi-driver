@@ -9,8 +9,8 @@ import 'package:hda_driver/services/service-locator.dart';
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 Future<void> main() async {
-  setupServiceLocator();
   WidgetsFlutterBinding.ensureInitialized();
+  await setupServiceLocator();
   await Firebase.initializeApp();
   runApp(HdaApp());
 }

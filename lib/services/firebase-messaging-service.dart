@@ -7,22 +7,22 @@ import 'identity-service.dart';
 
 class FirebaseMessagingService {
   Identity identity = getIt<Identity>();
+  static TripResource tripResource;
 
   FirebaseMessaging firebaseMessaging = FirebaseMessaging();
 
   static Future<Trip> tripRequested(Map<String, dynamic> trip) {
-    TripResource tripResource = TripResource();
-    return tripResource.get(int.parse(trip['id']));
+    FirebaseMessagingService.tripResource = TripResource();
+
+    print([trip, 'trip-requesteeerr']);
+    return FirebaseMessagingService.tripResource.find(int.parse(trip['id']));
   }
 
   static Future<dynamic> myBackgroundMessageHandler(
       Map<String, dynamic> message) async {
     if (message.containsKey('data')) {
-      print([message, 'this dd messssage']);
-
       if (message['data'].containsKey('channel')) {
         var data = message['data'];
-        print(data);
         switch (data['channel']) {
           case 'trip-request':
             tripRequested(Map<String, dynamic>.from(data));

@@ -21,7 +21,7 @@ class AbstractResource {
     client = ApiClient(identity.getToken());
   }
 
-  Future get(int id) async {
+  Future find(int id) async {
     var res = await httpGet("$url/$id");
     return fromJson(res);
   }

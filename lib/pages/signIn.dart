@@ -213,7 +213,6 @@ class _SignInPageState extends State<SignInPage> {
 
     if (widget.message != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        print("WidgetsBinding");
         _key.currentState.showSnackBar(SnackBar(
           content: Text(
             widget.message,

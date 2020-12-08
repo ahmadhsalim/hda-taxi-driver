@@ -16,9 +16,7 @@ Future getProfilePhoto() async {
 
     String photoPath = await fileResource.fileDownload(
       fileName: identity.getDriver().profilePhoto,
-      onDownloadProgress: (receivedBytes, totalBytes) {
-        print([receivedBytes, totalBytes]);
-      },
+      onDownloadProgress: (receivedBytes, totalBytes) {},
     );
     if (photoPath != null) identity.setProfilePhoto(photoPath);
   } catch (e) {

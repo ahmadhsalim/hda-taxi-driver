@@ -28,7 +28,7 @@ dependencies:
   google_maps_flutter: ^0.5.28+1
   geolocator: ^5.3.2+2
   http: ^0.12.1
-  get_it: ^4.0.2
+  get_it: ^5.0.1
   flutter_overlay_loader: ^0.0.2
   overlay_container: ^0.0.4+1
   flutter_svg: ^0.19.0

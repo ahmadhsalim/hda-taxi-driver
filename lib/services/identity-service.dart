@@ -95,6 +95,7 @@ class Identity {
 
   void setFirebaseToken(String token) {
     _firebaseToken = token;
+    print([_firebaseToken, '_firebaseToken set']);
   }
 
   String getFirebaseToken() {
