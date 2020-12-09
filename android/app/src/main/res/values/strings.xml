@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_channel_id" translatable="false">canaryalarms</string>
+    <string name="notification_channel_name">The title for the channel</string>
+    <string name="notification_channel_desc">A description that will show in App info window in phone settings</string>
+</resources>

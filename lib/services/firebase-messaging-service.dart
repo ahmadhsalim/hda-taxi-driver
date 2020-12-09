@@ -1,5 +1,4 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:hda_driver/models/trip.dart';
 import 'package:hda_driver/resources/trip-resource.dart';
 import 'package:hda_driver/services/service-locator.dart';
 
@@ -9,27 +8,26 @@ class FirebaseMessagingService {
   Identity identity = getIt<Identity>();
   static TripResource tripResource;
 
-  FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  FirebaseMessaging firebaseMessaging;
 
-  static Future<Trip> tripRequested(Map<String, dynamic> trip) {
-    FirebaseMessagingService.tripResource = TripResource();
-
-    print([trip, 'trip-requesteeerr']);
-    return FirebaseMessagingService.tripResource.find(int.parse(trip['id']));
+  FirebaseMessagingService() {
+    firebaseMessaging = FirebaseMessaging();
   }
 
-  static Future<dynamic> myBackgroundMessageHandler(
+  static void tripRequested(Map<String, dynamic> data) {
+    print([data, 'triipi-requestedddd']);
+  }
+
+  static Future<dynamic> backgroundMessageHandler(
       Map<String, dynamic> message) async {
-    if (message.containsKey('data')) {
-      if (message['data'].containsKey('channel')) {
-        var data = message['data'];
-        switch (data['channel']) {
-          case 'trip-request':
-            tripRequested(Map<String, dynamic>.from(data));
-            break;
-          default:
-        }
-      }
+    if (message.containsKey('notification')) {
+      var notification = message['notification'];
+      // switch (notification['channel']) {
+      //   case 'trip-request':
+      //     tripRequested(Map<String, dynamic>.from(notification));
+      //     break;
+      //   default:
+      // }
     }
 
     // if (message.containsKey('notification')) {
@@ -46,7 +44,6 @@ class FirebaseMessagingService {
         print("onMessage: $message");
         // _showItemDialog(message);
       },
-      onBackgroundMessage: myBackgroundMessageHandler,
       onLaunch: (Map<String, dynamic> message) async {
         print("onLaunch: $message");
         // _navigateToItemDetail(message);
@@ -55,6 +52,7 @@ class FirebaseMessagingService {
         print("onResume: $message");
         // _navigateToItemDetail(message);
       },
+      onBackgroundMessage: backgroundMessageHandler,
     );
     firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(
