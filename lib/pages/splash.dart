@@ -6,6 +6,7 @@ import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/navigator-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
+import 'package:hda_driver/services/socket-service.dart';
 
 class SplashPage extends StatefulWidget {
   SplashPage({Key key}) : super(key: key);
@@ -17,14 +18,16 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
   Identity identity = getIt<Identity>();
   FirebaseMessagingService firebase = FirebaseMessagingService();
+  SocketService socket = getIt<SocketService>();
 
   @override
   void initState() {
     scheduleMicrotask(() async {
       await firebase.initialize();
 
-      identity.hasAuthentication().then((value) {
+      identity.hasAuthentication().then((value) async {
         if (value) {
+          await socket.initialize();
           goToStart(context);
         } else {
           Navigator.pushReplacementNamed(context, signInRoute);
