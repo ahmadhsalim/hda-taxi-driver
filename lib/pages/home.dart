@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 
+import 'package:flutter/rendering.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hda_driver/models/driver.dart';
@@ -10,8 +12,12 @@ import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/location-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
+import 'package:hda_driver/services/socket-service.dart';
+import 'package:hda_driver/services/trip-service.dart';
 import 'package:hda_driver/styles/MainTheme.dart';
 import 'package:hda_driver/widgets/animation-box.dart';
+
+enum HomeState { offline, online, accepting, pickUp, onTrip }
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -23,17 +29,47 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _key = GlobalKey<ScaffoldState>();
   final Identity identity = getIt<Identity>();
+  final SocketService socket = getIt<SocketService>();
   final DriverResource driverResource = DriverResource();
+  final TripService tripService = TripService();
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition currentPosition = LocationService.defaultPosition;
   Trip trip;
   Driver driver;
   bool onOffLoading = false;
 
+  HomeState state = HomeState.offline;
+
   @override
   void initState() {
     driver = identity.getDriver();
+
+    if (driver.onDuty) {
+      socket.listen(socketListener);
+      state = HomeState.online;
+    }
+
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  void socketListener(event) {
+    var data = Map<String, dynamic>.from(json.decode(event));
+    print([data, 'home socketListener']);
+    if (data.containsKey('channel') && data['channel'] == 'trip-request') {
+      loadTrip(data['tripId']);
+    }
+  }
+
+  void loadTrip(id) async {
+    trip = await tripService.loadTrip(id);
+    setState(() {
+      state = HomeState.accepting;
+    });
   }
 
   onOffSwitch(bool value) async {
@@ -57,6 +93,10 @@ class _HomePageState extends State<HomePage> {
       if (result != null) {
         setState(() {
           driver.onDuty = value;
+          if (driver.onDuty)
+            state = HomeState.accepting;
+          else
+            state = HomeState.offline;
         });
       }
     } catch (e) {} finally {
@@ -64,6 +104,10 @@ class _HomePageState extends State<HomePage> {
         onOffLoading = false;
       });
     }
+  }
+
+  String getTitle() {
+    return state == HomeState.offline ? 'Your Offline' : 'Accepting Jobs';
   }
 
   Widget displayItem(String title, String subtitle) {
@@ -125,6 +169,58 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget stats() {
+    return Container(
+      child: Column(
+        children: [
+          Container(
+            height: 89,
+            color: Color.fromARGB(255, 247, 247, 247),
+            child: displayItem('MVR 60.00', 'Earned Today'),
+          ),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            displayItem(2.8.toStringAsFixed(1) + '%', 'Acceptance'),
+            displayItem(5.4.toStringAsFixed(1) + '%', 'Ratings'),
+            displayItem(4.7.toStringAsFixed(1) + '%', 'Cancellation'),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget incoming() {
+    return Container(
+      child: Column(
+        children: [
+          LinearProgressIndicator(
+            value: 0.3,
+            backgroundColor: Colors.transparent,
+            valueColor: AlwaysStoppedAnimation(MainTheme.primaryColour),
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              SizedBox(width: 16),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                  image: DecorationImage(
+                    image: FileImage(identity.getProfilePhoto()),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                height: 50,
+                width: 50,
+              ),
+              SizedBox(width: 16),
+            ],
+          ),
+          SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (driver == null)
@@ -169,7 +265,8 @@ class _HomePageState extends State<HomePage> {
                       width: 50,
                     ),
                   ),
-                  Text(driver.onDuty ? 'Accepting Jobs' : 'Your Offline',
+                  // Text(driver.onDuty ? 'Accepting Jobs' : 'Your Offline',
+                  Text(getTitle(),
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.w400)),
                   Switch(
@@ -187,21 +284,11 @@ class _HomePageState extends State<HomePage> {
                   )
                 : SizedBox.shrink(),
             Expanded(
-              child: driver.onDuty
-                  ? SizedBox.expand()
-                  // ? onlineDisplay(context)
-                  : offlineDisplay(context),
-            ),
-            Container(
-              height: 89,
-              color: Color.fromARGB(255, 247, 247, 247),
-              child: displayItem('MVR 60.00', 'Earned Today'),
-            ),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-              displayItem(2.8.toStringAsFixed(1) + '%', 'Acceptance'),
-              displayItem(5.4.toStringAsFixed(1) + '%', 'Ratings'),
-              displayItem(4.7.toStringAsFixed(1) + '%', 'Cancellation'),
-            ]),
+                child: state == HomeState.offline
+                    ? offlineDisplay(context)
+                    // : SizedBox.expand()
+                    : onlineDisplay(context)),
+            state == HomeState.accepting ? incoming() : stats()
           ],
         ),
       ),

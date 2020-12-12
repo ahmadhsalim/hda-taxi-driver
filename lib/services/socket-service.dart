@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:hda_driver/resources/misc/base-url.dart';
@@ -10,7 +9,7 @@ import 'identity-service.dart';
 class SocketService {
   Identity identity;
   WebSocket webSocket;
-  var webSocketStream = new BehaviorSubject<String>();
+  BehaviorSubject<String> subject = new BehaviorSubject<String>();
 
   final String url = socketHost;
 
@@ -25,9 +24,8 @@ class SocketService {
         );
 
         webSocket.listen((event) {
-          webSocketStream.add(event);
-          var x = json.decode(event);
-          print(x);
+          subject.add(event);
+          print([event, ' received socket']);
         });
 
         webSocket.handleError((error) {
@@ -38,6 +36,16 @@ class SocketService {
       print([e, 'error connecting socket']);
     }
   }
+
+  void listen(void listener(value)) {
+    print('listener attached ');
+    subject.stream.listen(listener);
+  }
+
+  // void removeListener(Function listener) {
+  //   if(subject.hasListener) {
+  //   }
+  // }
 
   void disconnect() {
     webSocket?.close();
