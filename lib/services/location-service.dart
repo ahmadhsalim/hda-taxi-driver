@@ -1,6 +1,7 @@
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:hda_driver/models/location.dart';
+import 'package:hda_driver/models/location.dart' as HdaLocation;
 
 class LocationService {
   static final double defaultZoom = 16;
@@ -11,10 +12,7 @@ class LocationService {
   );
 
   static Future<Position> getCurrentLocation() {
-    final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
-
-    return geolocator
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
+    return Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
         .catchError((e) {
       print(e);
     });
@@ -36,12 +34,11 @@ class LocationService {
         target: LatLng(latitude, longitude), zoom: LocationService.defaultZoom);
   }
 
-  static Future<Location> getLocationAddress(CameraPosition position) async {
-    final Geolocator _geolocator = Geolocator();
-
-    List<Placemark> newPlace = await _geolocator.placemarkFromCoordinates(
+  static Future<HdaLocation.Location> getLocationAddress(
+      CameraPosition position) async {
+    List<Placemark> placemarks = await placemarkFromCoordinates(
         position.target.latitude, position.target.longitude);
-    Placemark placeMark = newPlace[0];
+    Placemark placeMark = placemarks[0];
     String name = placeMark.name;
     String subLocality = placeMark.subLocality;
     String thoroughfare = placeMark.thoroughfare;
@@ -76,7 +73,7 @@ class LocationService {
       address = subLocality;
     }
 
-    return Location(
+    return HdaLocation.Location(
         name: address,
         latitude: position.target.latitude,
         longitude: position.target.longitude,

@@ -3,12 +3,14 @@ import 'dart:io';
 
 import 'package:hda_driver/resources/misc/base-url.dart';
 import 'package:hda_driver/services/service-locator.dart';
+import 'package:rxdart/rxdart.dart';
 
 import 'identity-service.dart';
 
 class SocketService {
   Identity identity;
   WebSocket webSocket;
+  var webSocketStream = new BehaviorSubject<String>();
 
   final String url = socketHost;
 
@@ -23,6 +25,7 @@ class SocketService {
         );
 
         webSocket.listen((event) {
+          webSocketStream.add(event);
           var x = json.decode(event);
           print(x);
         });
