@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hda_driver/models/driver.dart';
@@ -16,6 +18,7 @@ import 'package:hda_driver/services/socket-service.dart';
 import 'package:hda_driver/services/trip-service.dart';
 import 'package:hda_driver/styles/MainTheme.dart';
 import 'package:hda_driver/widgets/animation-box.dart';
+import 'package:hda_driver/widgets/ob-button.dart';
 
 enum HomeState { offline, online, accepting, pickUp, onTrip }
 
@@ -27,6 +30,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  static double waitingDuration = 30000;
+
   final _key = GlobalKey<ScaffoldState>();
   final Identity identity = getIt<Identity>();
   final SocketService socket = getIt<SocketService>();
@@ -37,8 +42,10 @@ class _HomePageState extends State<HomePage> {
   Trip trip;
   Driver driver;
   bool onOffLoading = false;
+  double waitingIndication = 0;
 
   HomeState state = HomeState.offline;
+  Timer _timer;
 
   @override
   void initState() {
@@ -48,25 +55,46 @@ class _HomePageState extends State<HomePage> {
       socket.listen(socketListener);
       state = HomeState.online;
     }
-
     super.initState();
   }
 
   @override
   void dispose() {
+    _timer.cancel();
     super.dispose();
   }
 
-  void socketListener(event) {
+  void socketListener(event) async {
     var data = Map<String, dynamic>.from(json.decode(event));
     print([data, 'home socketListener']);
     if (data.containsKey('channel') && data['channel'] == 'trip-request') {
-      loadTrip(data['tripId']);
+      await loadTrip(data['tripId']);
+      showTimer();
     }
   }
 
-  void loadTrip(id) async {
-    trip = await tripService.loadTrip(id);
+  showTimer() {
+    _timer = Timer.periodic(Duration(milliseconds: 100), (Timer timer) {
+      if (waitingIndication >= waitingDuration) {
+        timer.cancel();
+        return acceptTimeout();
+      }
+
+      setState(() {
+        waitingIndication += 100;
+      });
+    });
+  }
+
+  Future acceptTimeout() async {
+    setState(() {
+      state = HomeState.accepting;
+    });
+    await tripService.tripTimedout();
+  }
+
+  Future loadTrip(id) async {
+    await tripService.loadTrip(id);
     setState(() {
       state = HomeState.accepting;
     });
@@ -191,14 +219,16 @@ class _HomePageState extends State<HomePage> {
   Widget incoming() {
     return Container(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           LinearProgressIndicator(
-            value: 0.3,
+            value: waitingIndication / waitingDuration,
             backgroundColor: Colors.transparent,
             valueColor: AlwaysStoppedAnimation(MainTheme.primaryColour),
           ),
           SizedBox(height: 16),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(width: 16),
               Container(
@@ -213,12 +243,132 @@ class _HomePageState extends State<HomePage> {
                 width: 50,
               ),
               SizedBox(width: 16),
+              Text(
+                '4.9',
+                style: TextStyle(fontSize: 15, color: Color(0xFF707070)),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child:
+                    SvgPicture.asset('assets/star.svg', height: 16, width: 16),
+              ),
+              Expanded(child: SizedBox()),
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Text('3 min', style: TextStyle(fontSize: 20)),
+              ),
             ],
           ),
-          SizedBox(height: 16),
+          Container(
+            padding: EdgeInsets.only(top: 16),
+            color: Colors.white,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 13),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.radio_button_checked,
+                        color: Color(0xFFF7E28D),
+                      ),
+                      DottedLine(
+                        dashLength: 5,
+                        dashGapLength: 5,
+                        lineThickness: 2,
+                        dashColor: Color(0xFFC8C7CC),
+                        direction: Axis.vertical,
+                        lineLength: 30,
+                      ),
+                      Icon(
+                        Icons.radio_button_checked,
+                        color: Color(0xFF3F44AB),
+                      )
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 3),
+                    Text(
+                      'PICK-UP',
+                      style: TextStyle(color: Color(0xFF707070), fontSize: 14),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      tripService.trip.start.name,
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    Divider(
+                      thickness: 1,
+                      height: 16,
+                      color: Colors.black,
+                    ),
+                    Text(
+                      'DROP-OFF',
+                      style: TextStyle(color: Color(0xFF707070), fontSize: 14),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      tripService.trip.getDropOff().name,
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    SizedBox(height: 15),
+                  ],
+                )
+              ],
+            ),
+          ),
+          Padding(
+            padding:
+                const EdgeInsets.only(left: 16, top: 16, right: 16, bottom: 30),
+            child: ObButton(
+              text: 'Accept Job',
+              onPressed: () async {
+                bool accepted = await tripService.acceptJob();
+                if (!accepted) {
+                  _key.currentState.showSnackBar(SnackBar(
+                    backgroundColor: Colors.red[400],
+                    content: Text(
+                      'Trip not accepted.',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                    duration: Duration(seconds: 3),
+                  ));
+                  setState(() {
+                    state = HomeState.accepting;
+                  });
+                } else {
+                  setState(() {
+                    state = HomeState.pickUp;
+                  });
+                }
+              },
+            ),
+          ),
+          // SizedBox(height: 16),
         ],
       ),
     );
+  }
+
+  Widget pickUp() {
+    return Text('booyaah.. pickup');
+  }
+
+  Widget showBottomBar() {
+    switch (state) {
+      case HomeState.accepting:
+        return incoming();
+        break;
+      case HomeState.pickUp:
+        return pickUp();
+      default:
+        return stats();
+    }
   }
 
   @override
@@ -265,7 +415,6 @@ class _HomePageState extends State<HomePage> {
                       width: 50,
                     ),
                   ),
-                  // Text(driver.onDuty ? 'Accepting Jobs' : 'Your Offline',
                   Text(getTitle(),
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.w400)),
@@ -288,7 +437,7 @@ class _HomePageState extends State<HomePage> {
                     ? offlineDisplay(context)
                     // : SizedBox.expand()
                     : onlineDisplay(context)),
-            state == HomeState.accepting ? incoming() : stats()
+            showBottomBar(),
           ],
         ),
       ),

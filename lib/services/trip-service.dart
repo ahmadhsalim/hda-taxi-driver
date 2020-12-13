@@ -1,3 +1,4 @@
+import 'package:hda_driver/models/driver.dart';
 import 'package:hda_driver/models/location.dart';
 import 'package:hda_driver/models/trip.dart';
 import 'package:hda_driver/models/vehicle-type.dart';
@@ -21,11 +22,10 @@ class TripService {
     return this;
   }
 
-  Future<Trip> loadTrip(int id) async {
+  Future loadTrip(int id) async {
     TripResource resource = TripResource();
-    var res = await resource.find(id,
+    trip = await resource.find(id,
         params: {'include': 'start,dropOffs,vehicleType.fare,customer'});
-    return res;
   }
 
   setStart(Location location) {
@@ -40,5 +40,21 @@ class TripService {
     trip.vehicleType = type;
   }
 
-  // Future<Trip> loadTrip(int id) {}
+  Future<bool> acceptJob() async {
+    try {
+      TripResource resource = TripResource();
+      var res = await resource.acceptJob(trip.id);
+      if (res == null) return false;
+      await loadTrip(trip.id);
+
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  Future tripTimedout() {
+    print('timmeed out');
+  }
 }
