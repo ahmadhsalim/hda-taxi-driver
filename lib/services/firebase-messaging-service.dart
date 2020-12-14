@@ -21,7 +21,7 @@ class FirebaseMessagingService {
   static Future<dynamic> backgroundMessageHandler(
       Map<String, dynamic> message) async {
     if (message.containsKey('notification')) {
-      var notification = message['notification'];
+      // var notification = message['notification'];
       // switch (notification['channel']) {
       //   case 'trip-request':
       //     tripRequested(Map<String, dynamic>.from(notification));

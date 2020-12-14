@@ -90,7 +90,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       state = HomeState.accepting;
     });
-    await tripService.tripTimedout();
+    await tripService.missed();
   }
 
   Future loadTrip(id) async {
@@ -330,7 +330,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: () async {
                 bool accepted = await tripService.acceptJob();
                 if (!accepted) {
-                  _key.currentState.showSnackBar(SnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     backgroundColor: Colors.red[400],
                     content: Text(
                       'Trip not accepted.',

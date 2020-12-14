@@ -251,7 +251,7 @@ class _LegalDocumentsUploadPageState extends State<LegalDocumentsUploadPage> {
               }
             } catch (e) {
               print(e);
-              _key.currentState.showSnackBar(SnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(
                   'Unable to save. Try again.',
                   style: TextStyle(color: Colors.white, fontSize: 16),

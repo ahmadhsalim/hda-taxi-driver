@@ -25,7 +25,6 @@ class SocketService {
 
         webSocket.listen((event) {
           subject.add(event);
-          print([event, ' received socket']);
         });
 
         webSocket.handleError((error) {

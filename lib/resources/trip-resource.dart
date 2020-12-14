@@ -19,4 +19,13 @@ class TripResource extends AbstractResource {
     if (res.statusCode == 200) return json.decode(res.body);
     return null;
   }
+
+  Future missed(int id) async {
+    Response res = await client.put(
+      Uri.http(getUrlPrefix(), baseUrl + "$url/$id/missed"),
+    );
+
+    if (res.statusCode == 200) return json.decode(res.body);
+    return null;
+  }
 }

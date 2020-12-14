@@ -205,7 +205,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 bool success = await update(name, mobile, email);
 
                 if (success) {
-                  _key.currentState.showSnackBar(SnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(
                       'Updated',
                       style: TextStyle(color: Colors.white, fontSize: 16),
@@ -213,7 +213,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     duration: Duration(seconds: 3),
                   ));
                 } else {
-                  _key.currentState.showSnackBar(SnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(
                       'Update failed.',
                       style: TextStyle(color: Colors.white, fontSize: 16),

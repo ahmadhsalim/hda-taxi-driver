@@ -1,4 +1,3 @@
-import 'package:hda_driver/models/driver.dart';
 import 'package:hda_driver/models/location.dart';
 import 'package:hda_driver/models/trip.dart';
 import 'package:hda_driver/models/vehicle-type.dart';
@@ -54,7 +53,16 @@ class TripService {
     }
   }
 
-  Future tripTimedout() {
-    print('timmeed out');
+  Future missed() async {
+    try {
+      TripResource resource = TripResource();
+      var res = await resource.missed(trip.id);
+      if (res == null) return false;
+
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
   }
 }
