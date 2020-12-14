@@ -39,7 +39,6 @@ class _HomePageState extends State<HomePage> {
   final TripService tripService = TripService();
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition currentPosition = LocationService.defaultPosition;
-  Trip trip;
   Driver driver;
   bool onOffLoading = false;
   double waitingIndication = 0;
@@ -88,7 +87,8 @@ class _HomePageState extends State<HomePage> {
 
   Future acceptTimeout() async {
     setState(() {
-      state = HomeState.accepting;
+      state = HomeState.online;
+      tripService.clearTrip();
     });
     await tripService.missed();
   }
@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> {
   Future loadTrip(id) async {
     await tripService.loadTrip(id);
     setState(() {
-      state = HomeState.accepting;
+      if (tripService.getTrip() != null) state = HomeState.accepting;
     });
   }
 
@@ -105,6 +105,7 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       onOffLoading = true;
+      tripService.clearTrip();
     });
     try {
       var result;
@@ -122,7 +123,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           driver.onDuty = value;
           if (driver.onDuty)
-            state = HomeState.accepting;
+            state = HomeState.online;
           else
             state = HomeState.offline;
         });
@@ -217,6 +218,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget incoming() {
+    Trip trip = tripService.getTrip();
+    print([trip, 'incomming trip', state]);
+
     return Container(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -299,7 +303,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     SizedBox(height: 5),
                     Text(
-                      tripService.trip.start.name,
+                      trip.start.name,
                       style: TextStyle(fontSize: 14),
                     ),
                     Divider(
@@ -313,7 +317,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     SizedBox(height: 5),
                     Text(
-                      tripService.trip.getDropOff().name,
+                      trip.getDropOff().name,
                       style: TextStyle(fontSize: 14),
                     ),
                     SizedBox(height: 15),
