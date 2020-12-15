@@ -116,8 +116,9 @@ class _HomePageState extends State<HomePage> {
             currentPosition = LocationService.getCameraPosition(position);
           });
         });
-      } else
+      } else {
         result = await driverResource.offline();
+      }
 
       if (result != null) {
         setState(() {
@@ -437,10 +438,11 @@ class _HomePageState extends State<HomePage> {
                   )
                 : SizedBox.shrink(),
             Expanded(
-                child: state == HomeState.offline
-                    ? offlineDisplay(context)
-                    // : SizedBox.expand()
-                    : onlineDisplay(context)),
+              child: state == HomeState.offline
+                  ? offlineDisplay(context)
+                  // : SizedBox.expand(),
+                  : onlineDisplay(context),
+            ),
             showBottomBar(),
           ],
         ),
