@@ -73,6 +73,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   showTimer() {
+    waitingIndication = 0;
     _timer = Timer.periodic(Duration(milliseconds: 100), (Timer timer) {
       if (waitingIndication >= waitingDuration) {
         timer.cancel();
@@ -220,7 +221,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget incoming() {
     Trip trip = tripService.getTrip();
-    print([trip, 'incomming trip', state]);
+    print('incomming trip');
 
     return Container(
       child: Column(
