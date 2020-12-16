@@ -1,4 +1,3 @@
-
 import 'package:geolocator/geolocator.dart';
 
 class Location {
@@ -11,12 +10,12 @@ class Location {
   Location({this.id, this.name, this.latitude, this.longitude, this.type});
 
   static Location fromJson(Map<String, dynamic> json) {
-    if(json != null) {
+    if (json != null) {
       return Location(
         id: json['id'],
         name: json['name'],
-        latitude: json['latitude'],
-        longitude: json['longitude'],
+        latitude: double.parse(json['latitude']),
+        longitude: double.parse(json['longitude']),
         type: json['type'],
       );
     } else {

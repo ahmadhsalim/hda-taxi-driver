@@ -1,6 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/rendering.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/material.dart';
+import 'package:dotted_line/dotted_line.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hda_driver/models/driver.dart';
@@ -9,9 +15,14 @@ import 'package:hda_driver/resources/driver-resource.dart';
 import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/location-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
-import 'package:flutter/material.dart';
+import 'package:hda_driver/services/socket-service.dart';
+import 'package:hda_driver/services/trip-service.dart';
 import 'package:hda_driver/styles/MainTheme.dart';
 import 'package:hda_driver/widgets/animation-box.dart';
+import 'package:hda_driver/widgets/ob-button.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+enum HomeState { offline, online, accepting, pickUp, onTrip }
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -21,19 +32,75 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  static double waitingDuration = 30000;
+
   final _key = GlobalKey<ScaffoldState>();
   final Identity identity = getIt<Identity>();
+  final SocketService socket = getIt<SocketService>();
   final DriverResource driverResource = DriverResource();
+  final TripService tripService = TripService();
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition currentPosition = LocationService.defaultPosition;
-  Trip trip;
   Driver driver;
   bool onOffLoading = false;
+  double waitingIndication = 0;
+
+  HomeState state = HomeState.offline;
+  Timer _timer;
 
   @override
   void initState() {
     driver = identity.getDriver();
+
+    if (driver.onDuty) {
+      socket.listen(socketListener);
+      state = HomeState.online;
+    }
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  void socketListener(event) async {
+    var data = Map<String, dynamic>.from(json.decode(event));
+    print([data, 'home socketListener']);
+    if (data.containsKey('channel') && data['channel'] == 'trip-request') {
+      await loadTrip(data['tripId']);
+      showTimer();
+    }
+  }
+
+  showTimer() {
+    waitingIndication = 0;
+    _timer = Timer.periodic(Duration(milliseconds: 100), (Timer timer) {
+      if (waitingIndication >= waitingDuration) {
+        timer.cancel();
+        return acceptTimeout();
+      }
+
+      setState(() {
+        waitingIndication += 100;
+      });
+    });
+  }
+
+  Future acceptTimeout() async {
+    setState(() {
+      state = HomeState.online;
+      tripService.clearTrip();
+    });
+    await tripService.missed();
+  }
+
+  Future loadTrip(id) async {
+    await tripService.loadTrip(id);
+    setState(() {
+      if (tripService.getTrip() != null) state = HomeState.accepting;
+    });
   }
 
   onOffSwitch(bool value) async {
@@ -41,6 +108,7 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       onOffLoading = true;
+      tripService.clearTrip();
     });
     try {
       var result;
@@ -51,12 +119,17 @@ class _HomePageState extends State<HomePage> {
             currentPosition = LocationService.getCameraPosition(position);
           });
         });
-      } else
+      } else {
         result = await driverResource.offline();
+      }
 
       if (result != null) {
         setState(() {
           driver.onDuty = value;
+          if (driver.onDuty)
+            state = HomeState.online;
+          else
+            state = HomeState.offline;
         });
       }
     } catch (e) {} finally {
@@ -64,6 +137,10 @@ class _HomePageState extends State<HomePage> {
         onOffLoading = false;
       });
     }
+  }
+
+  String getTitle() {
+    return state == HomeState.offline ? 'Your Offline' : 'Accepting Jobs';
   }
 
   Widget displayItem(String title, String subtitle) {
@@ -125,6 +202,294 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget stats() {
+    return Container(
+      child: Column(
+        children: [
+          Container(
+            height: 89,
+            color: Color.fromARGB(255, 247, 247, 247),
+            child: displayItem('MVR 60.00', 'Earned Today'),
+          ),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            displayItem(2.8.toStringAsFixed(1) + '%', 'Acceptance'),
+            displayItem(5.4.toStringAsFixed(1) + '%', 'Ratings'),
+            displayItem(4.7.toStringAsFixed(1) + '%', 'Cancellation'),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget incoming() {
+    Trip trip = tripService.getTrip();
+
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          LinearProgressIndicator(
+            value: waitingIndication / waitingDuration,
+            backgroundColor: Colors.transparent,
+            valueColor: AlwaysStoppedAnimation(MainTheme.primaryColour),
+          ),
+          SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(width: 16),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                  image: DecorationImage(
+                    image: FileImage(identity.getProfilePhoto()),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                height: 50,
+                width: 50,
+              ),
+              SizedBox(width: 16),
+              Text(
+                '4.9',
+                style: TextStyle(fontSize: 15, color: Color(0xFF707070)),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child:
+                    SvgPicture.asset('assets/star.svg', height: 16, width: 16),
+              ),
+              Expanded(child: SizedBox()),
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Text('3 min', style: TextStyle(fontSize: 20)),
+              ),
+            ],
+          ),
+          Container(
+            padding: EdgeInsets.only(top: 16),
+            color: Colors.white,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 13),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.radio_button_checked,
+                        color: Color(0xFFF7E28D),
+                      ),
+                      DottedLine(
+                        dashLength: 5,
+                        dashGapLength: 5,
+                        lineThickness: 2,
+                        dashColor: Color(0xFFC8C7CC),
+                        direction: Axis.vertical,
+                        lineLength: 30,
+                      ),
+                      Icon(
+                        Icons.radio_button_checked,
+                        color: Color(0xFF3F44AB),
+                      )
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 3),
+                    Text(
+                      'PICK-UP',
+                      style: TextStyle(color: Color(0xFF707070), fontSize: 14),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      trip.start.name,
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    Divider(
+                      thickness: 1,
+                      height: 16,
+                      color: Colors.black,
+                    ),
+                    Text(
+                      'DROP-OFF',
+                      style: TextStyle(color: Color(0xFF707070), fontSize: 14),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      trip.getDropOff().name,
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    SizedBox(height: 15),
+                  ],
+                )
+              ],
+            ),
+          ),
+          Padding(
+            padding:
+                const EdgeInsets.only(left: 16, top: 16, right: 16, bottom: 30),
+            child: ObButton(
+              text: 'Accept Job',
+              onPressed: () async {
+                bool accepted = await tripService.acceptJob();
+                if (!accepted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    backgroundColor: Colors.red[400],
+                    content: Text(
+                      'Trip not accepted.',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                    duration: Duration(seconds: 3),
+                  ));
+                  setState(() {
+                    state = HomeState.accepting;
+                  });
+                } else {
+                  setState(() {
+                    state = HomeState.pickUp;
+                    _timer?.cancel();
+                  });
+                }
+              },
+            ),
+          ),
+          // SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget pickUp() {
+    return Text('bddooyaah.. pickup');
+  }
+
+  Widget route() {
+    if (state == HomeState.pickUp || state == HomeState.onTrip) {
+      Trip trip = tripService.getTrip();
+
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.only(top: 15),
+            color: MainTheme.primaryColour,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 13),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.radio_button_checked,
+                          color: Color(0xFFF7E28D)),
+                      DottedLine(
+                        dashLength: 5,
+                        dashGapLength: 5,
+                        lineThickness: 2,
+                        dashColor: Color(0xFFC8C7CC),
+                        direction: Axis.vertical,
+                        lineLength: 30,
+                      ),
+                      Icon(Icons.radio_button_checked, color: Colors.white),
+                      // SizedBox.expand()
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 3),
+                      Text(
+                        'PICK-UP',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        trip.start.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'DROP-OFF',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        trip.getDropOff().name,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500),
+                      ),
+                      SizedBox(height: 15),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 15, right: 15),
+                  child: Center(
+                    child: IconButton(
+                      icon: SvgPicture.asset(
+                        'assets/navigate_map.svg',
+                        width: 42,
+                        height: 42,
+                      ),
+                      iconSize: 42,
+                      onPressed: () async {
+                        String url;
+                        if (Platform.isIOS) {
+                          url =
+                              "https://maps.apple.com/?saddr=${trip.start.latitude},${trip.start.longitude}&daddr=${trip.dropOffs[0].latitude},${trip.dropOffs[0].longitude}&dirflg=car";
+                        } else {
+                          url =
+                              "https://www.google.com/maps/dir/?api=1&origin=${trip.start.latitude},${trip.start.longitude}&destination=${trip.dropOffs[0].latitude},${trip.dropOffs[0].longitude}";
+                        }
+                        if (await canLaunch(url)) {
+                          await launch(url);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                // IconButton(
+                //   icon: Icon(Icons.navigation),
+                //   color: Colors.white,
+                // )
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
+      return SizedBox.shrink();
+    }
+  }
+
+  Widget showBottomBar() {
+    switch (state) {
+      case HomeState.accepting:
+        return incoming();
+        break;
+      case HomeState.pickUp:
+        return pickUp();
+      default:
+        return stats();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (driver == null)
@@ -169,7 +534,7 @@ class _HomePageState extends State<HomePage> {
                       width: 50,
                     ),
                   ),
-                  Text(driver.onDuty ? 'Accepting Jobs' : 'Your Offline',
+                  Text(getTitle(),
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.w400)),
                   Switch(
@@ -187,21 +552,17 @@ class _HomePageState extends State<HomePage> {
                   )
                 : SizedBox.shrink(),
             Expanded(
-              child: driver.onDuty
-                  ? SizedBox.expand()
-                  // ? onlineDisplay(context)
-                  : offlineDisplay(context),
+              child: Stack(
+                children: [
+                  state == HomeState.offline
+                      ? offlineDisplay(context)
+                      // : SizedBox.expand(),
+                      : onlineDisplay(context),
+                  route(),
+                ],
+              ),
             ),
-            Container(
-              height: 89,
-              color: Color.fromARGB(255, 247, 247, 247),
-              child: displayItem('MVR 60.00', 'Earned Today'),
-            ),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-              displayItem(2.8.toStringAsFixed(1) + '%', 'Acceptance'),
-              displayItem(5.4.toStringAsFixed(1) + '%', 'Ratings'),
-              displayItem(4.7.toStringAsFixed(1) + '%', 'Cancellation'),
-            ]),
+            showBottomBar(),
           ],
         ),
       ),
