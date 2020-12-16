@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
 
-import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/material.dart';
+import 'package:dotted_line/dotted_line.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hda_driver/models/driver.dart';
@@ -13,12 +15,12 @@ import 'package:hda_driver/resources/driver-resource.dart';
 import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/location-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
-import 'package:flutter/material.dart';
 import 'package:hda_driver/services/socket-service.dart';
 import 'package:hda_driver/services/trip-service.dart';
 import 'package:hda_driver/styles/MainTheme.dart';
 import 'package:hda_driver/widgets/animation-box.dart';
 import 'package:hda_driver/widgets/ob-button.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 enum HomeState { offline, online, accepting, pickUp, onTrip }
 
@@ -221,7 +223,6 @@ class _HomePageState extends State<HomePage> {
 
   Widget incoming() {
     Trip trip = tripService.getTrip();
-    print('incomming trip');
 
     return Container(
       child: Column(
@@ -363,7 +364,118 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget pickUp() {
-    return Text('booyaah.. pickup');
+    return Text('bddooyaah.. pickup');
+  }
+
+  Widget route() {
+    if (state == HomeState.pickUp || state == HomeState.onTrip) {
+      Trip trip = tripService.getTrip();
+
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.only(top: 15),
+            color: MainTheme.primaryColour,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 13),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.radio_button_checked,
+                          color: Color(0xFFF7E28D)),
+                      DottedLine(
+                        dashLength: 5,
+                        dashGapLength: 5,
+                        lineThickness: 2,
+                        dashColor: Color(0xFFC8C7CC),
+                        direction: Axis.vertical,
+                        lineLength: 30,
+                      ),
+                      Icon(Icons.radio_button_checked, color: Colors.white),
+                      // SizedBox.expand()
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 3),
+                      Text(
+                        'PICK-UP',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        trip.start.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'DROP-OFF',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        trip.getDropOff().name,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500),
+                      ),
+                      SizedBox(height: 15),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 15, right: 15),
+                  child: Center(
+                    child: IconButton(
+                      icon: SvgPicture.asset(
+                        'assets/navigate_map.svg',
+                        width: 42,
+                        height: 42,
+                      ),
+                      iconSize: 42,
+                      onPressed: () async {
+                        String url;
+                        if (Platform.isIOS) {
+                          url =
+                              "https://maps.apple.com/?saddr=${trip.start.latitude},${trip.start.longitude}&daddr=${trip.dropOffs[0].latitude},${trip.dropOffs[0].longitude}&dirflg=car";
+                        } else {
+                          url =
+                              "https://www.google.com/maps/dir/?api=1&origin=${trip.start.latitude},${trip.start.longitude}&destination=${trip.dropOffs[0].latitude},${trip.dropOffs[0].longitude}";
+                        }
+                        if (await canLaunch(url)) {
+                          await launch(url);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                // IconButton(
+                //   icon: Icon(Icons.navigation),
+                //   color: Colors.white,
+                // )
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
+      return SizedBox.shrink();
+    }
   }
 
   Widget showBottomBar() {
@@ -440,10 +552,15 @@ class _HomePageState extends State<HomePage> {
                   )
                 : SizedBox.shrink(),
             Expanded(
-              child: state == HomeState.offline
-                  ? offlineDisplay(context)
-                  // : SizedBox.expand(),
-                  : onlineDisplay(context),
+              child: Stack(
+                children: [
+                  state == HomeState.offline
+                      ? offlineDisplay(context)
+                      // : SizedBox.expand(),
+                      : onlineDisplay(context),
+                  route(),
+                ],
+              ),
             ),
             showBottomBar(),
           ],
