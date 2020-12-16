@@ -350,6 +350,7 @@ class _HomePageState extends State<HomePage> {
                 } else {
                   setState(() {
                     state = HomeState.pickUp;
+                    _timer?.cancel();
                   });
                 }
               },

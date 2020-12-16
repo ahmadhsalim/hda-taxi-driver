@@ -7,6 +7,7 @@ import 'package:hda_driver/services/navigator-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
 import 'package:hda_driver/services/socket-service.dart';
+import 'package:hda_driver/styles/MainTheme.dart';
 
 class SplashPage extends StatefulWidget {
   SplashPage({Key key}) : super(key: key);
@@ -43,9 +44,11 @@ class _SplashPageState extends State<SplashPage> {
     return Scaffold(
         body: Container(
       decoration: BoxDecoration(
-        color: Color.fromARGB(255, 247, 226, 141),
+        color: MainTheme.primaryColour,
       ),
-      child: Center(child: Image(image: AssetImage('assets/splash.png'))),
+      child: Center(
+          // child: Image(image: AssetImage('assets/splash.png')),
+          ),
     ));
   }
 }
