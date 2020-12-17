@@ -28,4 +28,31 @@ class TripResource extends AbstractResource {
     if (res.statusCode == 200) return json.decode(res.body);
     return null;
   }
+
+  Future cancel(int id) async {
+    Response res = await client.put(
+      Uri.http(getUrlPrefix(), baseUrl + "$url/$id/cancel"),
+    );
+
+    if (res.statusCode == 200) return json.decode(res.body);
+    return null;
+  }
+
+  Future pickUp(int id) async {
+    Response res = await client.put(
+      Uri.http(getUrlPrefix(), baseUrl + "$url/$id/pick-up"),
+    );
+
+    if (res.statusCode == 200) return json.decode(res.body);
+    return null;
+  }
+
+  Future complete(int id) async {
+    Response res = await client.put(
+      Uri.http(getUrlPrefix(), baseUrl + "$url/$id/complete"),
+    );
+
+    if (res.statusCode == 200) return json.decode(res.body);
+    return null;
+  }
 }

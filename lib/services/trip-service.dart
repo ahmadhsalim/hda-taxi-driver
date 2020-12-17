@@ -72,4 +72,47 @@ class TripService {
       return false;
     }
   }
+
+  Future cancel() async {
+    try {
+      TripResource resource = TripResource();
+      var res = await resource.cancel(_trip.id);
+      clearTrip();
+
+      if (res == null) return false;
+
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  Future pickUp() async {
+    try {
+      TripResource resource = TripResource();
+      var res = await resource.pickUp(_trip.id);
+
+      if (res == null) return false;
+
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  Future complete() async {
+    try {
+      TripResource resource = TripResource();
+      var res = await resource.complete(_trip.id);
+
+      if (res == null) return false;
+
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
 }

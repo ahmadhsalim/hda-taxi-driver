@@ -10,8 +10,10 @@ import 'package:dotted_line/dotted_line.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hda_driver/models/driver.dart';
+import 'package:hda_driver/models/location.dart';
 import 'package:hda_driver/models/trip.dart';
 import 'package:hda_driver/resources/driver-resource.dart';
+import 'package:hda_driver/resources/file-resource.dart';
 import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/location-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
@@ -20,6 +22,7 @@ import 'package:hda_driver/services/trip-service.dart';
 import 'package:hda_driver/styles/MainTheme.dart';
 import 'package:hda_driver/widgets/animation-box.dart';
 import 'package:hda_driver/widgets/ob-button.dart';
+import 'package:hda_driver/widgets/profile-photo.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 enum HomeState { offline, online, accepting, pickUp, onTrip }
@@ -44,6 +47,7 @@ class _HomePageState extends State<HomePage> {
   Driver driver;
   bool onOffLoading = false;
   double waitingIndication = 0;
+  File _customerPhoto;
 
   HomeState state = HomeState.offline;
   Timer _timer;
@@ -67,7 +71,6 @@ class _HomePageState extends State<HomePage> {
 
   void socketListener(event) async {
     var data = Map<String, dynamic>.from(json.decode(event));
-    print([data, 'home socketListener']);
     if (data.containsKey('channel') && data['channel'] == 'trip-request') {
       await loadTrip(data['tripId']);
       showTimer();
@@ -97,10 +100,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future loadTrip(id) async {
+    FileResource fileResource = FileResource();
+
     await tripService.loadTrip(id);
-    setState(() {
-      if (tripService.getTrip() != null) state = HomeState.accepting;
-    });
+    Trip trip = tripService.getTrip();
+    if (trip != null) {
+      if (trip.customer.profilePhoto != null) {
+        String photoPath = await fileResource.fileDownload(
+            fileName: trip.customer.profilePhoto);
+        if (photoPath != null) {
+          _customerPhoto = File(photoPath);
+        }
+      }
+      setState(() {
+        state = HomeState.accepting;
+      });
+    }
   }
 
   onOffSwitch(bool value) async {
@@ -193,9 +208,9 @@ class _HomePageState extends State<HomePage> {
       mapType: MapType.normal,
       myLocationEnabled: true,
       initialCameraPosition: currentPosition,
-      zoomControlsEnabled: false,
-      myLocationButtonEnabled: true,
-      scrollGesturesEnabled: false,
+      // zoomControlsEnabled: false,
+      // myLocationButtonEnabled: true,
+      // scrollGesturesEnabled: false,
       onMapCreated: (GoogleMapController controller) {
         _controller.complete(controller);
       },
@@ -363,8 +378,115 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget pickUp() {
-    return Text('bddooyaah.. pickup');
+  Widget onTrip() {
+    Trip trip = tripService.getTrip();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        IntrinsicHeight(
+          // padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            // crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                margin: const EdgeInsets.all(16),
+                width: 50,
+                height: 50,
+                child: ProfilePhoto(_customerPhoto),
+              ),
+              Center(
+                child: Text(
+                  '4.9',
+                  style: TextStyle(fontSize: 15, color: Color(0xFF707070)),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 6, right: 6),
+                child:
+                    SvgPicture.asset('assets/star.svg', height: 16, width: 16),
+              ),
+              Spacer(),
+              RawMaterialButton(
+                shape: CircleBorder(),
+                padding: const EdgeInsets.all(15),
+                highlightColor: Colors.transparent,
+                highlightElevation: 0,
+                constraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                child: SvgPicture.asset(
+                  'assets/call.svg',
+                  width: 34,
+                  height: 34,
+                ),
+                onPressed: () async {
+                  String url = 'tel://${trip.customer.mobile}';
+                  if (await canLaunch(url)) {
+                    await launch(url);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                        'Unable to open dialer.',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                      duration: Duration(seconds: 3),
+                    ));
+                  }
+                },
+              ),
+              RawMaterialButton(
+                shape: CircleBorder(),
+                padding: const EdgeInsets.all(15),
+                highlightColor: Colors.transparent,
+                highlightElevation: 0,
+                constraints: BoxConstraints(minWidth: 0, minHeight: 0),
+                child: SvgPicture.asset(
+                  'assets/chat.svg',
+                  width: 34,
+                  height: 34,
+                ),
+                onPressed: () {},
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+          child: ObButton(
+            text: state == HomeState.pickUp ? 'Pick Up' : 'Drop Off',
+            onPressed: () async {
+              switch (state) {
+                case HomeState.pickUp:
+                  await tripService.pickUp();
+                  state = HomeState.onTrip;
+                  break;
+                default:
+                  await tripService.complete();
+                  // state = HomeState.pickUp;
+                  // print('dropped off');
+                  break;
+              }
+              setState(() {});
+            },
+          ),
+        ),
+        state == HomeState.pickUp
+            ? Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                child: ObButton(
+                  text: 'Cancel',
+                  filled: false,
+                  textColor: Color(0xFF707070),
+                  onPressed: () async {
+                    await tripService.cancel();
+                    setState(() {
+                      state = HomeState.online;
+                    });
+                  },
+                ),
+              )
+            : SizedBox(height: 8)
+      ],
+    );
   }
 
   Widget route() {
@@ -375,14 +497,14 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.only(top: 15),
+            // padding: EdgeInsets.only(top: 15),
             color: MainTheme.primaryColour,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 13),
+                  padding: const EdgeInsets.only(
+                      top: 15, bottom: 15, left: 16, right: 13),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -397,48 +519,49 @@ class _HomePageState extends State<HomePage> {
                         lineLength: 30,
                       ),
                       Icon(Icons.radio_button_checked, color: Colors.white),
-                      // SizedBox.expand()
                     ],
                   ),
                 ),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 3),
-                      Text(
-                        'PICK-UP',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        trip.start.name,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        'DROP-OFF',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        trip.getDropOff().name,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500),
-                      ),
-                      SizedBox(height: 15),
-                    ],
+                  child: Container(
+                    padding: const EdgeInsets.only(top: 15, bottom: 15),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 3),
+                        Text(
+                          'PICK-UP',
+                          style: TextStyle(color: Colors.white, fontSize: 14),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          trip.start.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          'DROP-OFF',
+                          style: TextStyle(color: Colors.white, fontSize: 14),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          trip.getDropOff().name,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                Padding(
+                Container(
                   padding: const EdgeInsets.only(left: 15, right: 15),
                   child: Center(
                     child: IconButton(
@@ -450,12 +573,17 @@ class _HomePageState extends State<HomePage> {
                       iconSize: 42,
                       onPressed: () async {
                         String url;
+                        Location dest = trip.start;
+                        if (state == HomeState.onTrip) dest = trip.dropOffs[0];
+
                         if (Platform.isIOS) {
                           url =
-                              "https://maps.apple.com/?saddr=${trip.start.latitude},${trip.start.longitude}&daddr=${trip.dropOffs[0].latitude},${trip.dropOffs[0].longitude}&dirflg=car";
+                              "https://maps.apple.com/?daddr=${dest.latitude},${dest.longitude}&dirflg=car";
+                          // "https://maps.apple.com/?saddr=${trip.start.latitude},${trip.start.longitude}&daddr=${dest.latitude},${dest.longitude}&dirflg=car";
                         } else {
                           url =
-                              "https://www.google.com/maps/dir/?api=1&origin=${trip.start.latitude},${trip.start.longitude}&destination=${trip.dropOffs[0].latitude},${trip.dropOffs[0].longitude}";
+                              "https://www.google.com/maps/dir/?api=1&destination=${dest.latitude},${dest.longitude}";
+                          // "https://www.google.com/maps/dir/?api=1&origin=${trip.start.latitude},${trip.start.longitude}&destination=${trip.dropOffs[0].latitude},${trip.dropOffs[0].longitude}";
                         }
                         if (await canLaunch(url)) {
                           await launch(url);
@@ -484,7 +612,8 @@ class _HomePageState extends State<HomePage> {
         return incoming();
         break;
       case HomeState.pickUp:
-        return pickUp();
+      case HomeState.onTrip:
+        return onTrip();
       default:
         return stats();
     }
