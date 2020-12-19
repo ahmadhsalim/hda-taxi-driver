@@ -8,3 +8,4 @@ const String addVehicleRoute = '/add-vehicle';
 const String vehicleFormRoute = '/vehicle-form';
 const String documentUploadRoute = '/document-upload';
 const String vehicleReviewingRoute = '/vehicle-reviewing';
+const String ratingRoute = '/rating';

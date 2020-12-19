@@ -5,11 +5,13 @@ import 'package:hda_driver/pages/home.dart';
 import 'package:hda_driver/pages/legal-documents.dart';
 import 'package:hda_driver/pages/otpVerify.dart';
 import 'package:hda_driver/pages/profile.dart';
+import 'package:hda_driver/pages/rating.dart';
 import 'package:hda_driver/pages/signIn.dart';
 import 'package:hda_driver/pages/signUp.dart';
 import 'package:hda_driver/pages/vehicle-form.dart';
 import 'package:hda_driver/pages/vehicle-reviewing.dart';
 import 'package:hda_driver/screen-arguments/otp-verify-arguments.dart';
+import 'package:hda_driver/screen-arguments/rating-arguments.dart';
 import 'package:hda_driver/screen-arguments/sign-in-arguments.dart';
 import 'package:hda_driver/screen-arguments/vehicle-reviewing-arguments.dart';
 import 'constants.dart';
@@ -46,6 +48,10 @@ class HdaRouter {
         final VehicleReviewingArguments args = settings.arguments;
         return MaterialPageRoute(
             builder: (_) => VehicleReviewingPage(vehicle: args?.vehicle));
+      case ratingRoute:
+        final RatingArguments args = settings.arguments;
+        return MaterialPageRoute(
+            builder: (_) => RatingPage(tripService: args.tripService));
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(

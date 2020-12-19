@@ -1,29 +1,36 @@
+import 'dart:io';
+
 import 'package:hda_driver/models/location.dart';
 import 'package:hda_driver/models/trip.dart';
 import 'package:hda_driver/models/vehicle-type.dart';
+import 'package:hda_driver/resources/file-resource.dart';
 import 'package:hda_driver/resources/trip-resource.dart';
 
 class TripService {
   Trip _trip;
+  File customerPhoto;
 
-  TripService() {
-    // createTrip();
-  }
-
-  // TripService createTrip() {
-  //   trip = Trip();
-  //   trip.start = Location(
-  //       name: 'Pick-up',
-  //       latitude: LocationService.defaultPosition.target.latitude,
-  //       longitude: LocationService.defaultPosition.target.longitude,
-  //       type: 'start');
-  //   return this;
-  // }
+  // TripService();
 
   Future loadTrip(int id) async {
+    FileResource fileResource = FileResource();
     TripResource resource = TripResource();
     _trip = await resource.find(id,
         params: {'include': 'start,dropOffs,vehicleType.fare,customer'});
+    if (_trip != null) {
+      if (_trip.customer.profilePhoto != null) {
+        try {
+          String photoPath = await fileResource.fileDownload(
+              fileName: _trip.customer.profilePhoto);
+          if (photoPath != null) {
+            customerPhoto = File(photoPath);
+            _trip.customer.profilePhotoFile = customerPhoto;
+          }
+        } catch (e) {
+          print('Unable to download customer photo');
+        }
+      }
+    }
   }
 
   Trip getTrip() {
@@ -106,6 +113,7 @@ class TripService {
     try {
       TripResource resource = TripResource();
       var res = await resource.complete(_trip.id);
+      _trip = null;
 
       if (res == null) return false;
 
@@ -114,5 +122,10 @@ class TripService {
       print(e);
       return false;
     }
+  }
+
+  Future rateCustomer(int rating, String comments) {
+    TripResource resource = TripResource();
+    return resource.rateCustomer(_trip.id, rating, comments);
   }
 }

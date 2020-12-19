@@ -13,7 +13,8 @@ import 'package:hda_driver/models/driver.dart';
 import 'package:hda_driver/models/location.dart';
 import 'package:hda_driver/models/trip.dart';
 import 'package:hda_driver/resources/driver-resource.dart';
-import 'package:hda_driver/resources/file-resource.dart';
+import 'package:hda_driver/routes/constants.dart';
+import 'package:hda_driver/screen-arguments/rating-arguments.dart';
 import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/location-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
@@ -42,18 +43,18 @@ class _HomePageState extends State<HomePage> {
   final SocketService socket = getIt<SocketService>();
   final DriverResource driverResource = DriverResource();
   final TripService tripService = TripService();
-  Completer<GoogleMapController> _controller = Completer();
+  Completer<GoogleMapController> _controller;
   CameraPosition currentPosition = LocationService.defaultPosition;
   Driver driver;
   bool onOffLoading = false;
   double waitingIndication = 0;
-  File _customerPhoto;
 
   HomeState state = HomeState.offline;
   Timer _timer;
 
   @override
   void initState() {
+    _controller = Completer();
     driver = identity.getDriver();
 
     if (driver.onDuty) {
@@ -65,13 +66,22 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
+    _disposeMapController();
+    // socket.unsubscribe();
+
     super.dispose();
+  }
+
+  Future<void> _disposeMapController() async {
+    final GoogleMapController controller = await _controller.future;
+    controller.dispose();
   }
 
   void socketListener(event) async {
     var data = Map<String, dynamic>.from(json.decode(event));
     if (data.containsKey('channel') && data['channel'] == 'trip-request') {
+      print([data['tripId'], 'loading trip from socket']);
       await loadTrip(data['tripId']);
       showTimer();
     }
@@ -83,6 +93,7 @@ class _HomePageState extends State<HomePage> {
       if (waitingIndication >= waitingDuration) {
         timer.cancel();
         return acceptTimeout();
+        // waitingIndication = 0;
       }
 
       setState(() {
@@ -100,22 +111,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future loadTrip(id) async {
-    FileResource fileResource = FileResource();
-
     await tripService.loadTrip(id);
-    Trip trip = tripService.getTrip();
-    if (trip != null) {
-      if (trip.customer.profilePhoto != null) {
-        String photoPath = await fileResource.fileDownload(
-            fileName: trip.customer.profilePhoto);
-        if (photoPath != null) {
-          _customerPhoto = File(photoPath);
-        }
-      }
-      setState(() {
-        state = HomeState.accepting;
-      });
-    }
+    setState(() {
+      state = HomeState.accepting;
+    });
   }
 
   onOffSwitch(bool value) async {
@@ -165,10 +164,13 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Center(
-              child: Text(title,
-                  style: TextStyle(
-                    fontSize: 24,
-                  ))),
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 24,
+              ),
+            ),
+          ),
           Center(
             child: Text(
               subtitle,
@@ -212,7 +214,7 @@ class _HomePageState extends State<HomePage> {
       // myLocationButtonEnabled: true,
       // scrollGesturesEnabled: false,
       onMapCreated: (GoogleMapController controller) {
-        _controller.complete(controller);
+        _controller?.complete(controller);
       },
     );
   }
@@ -254,15 +256,10 @@ class _HomePageState extends State<HomePage> {
             children: [
               SizedBox(width: 16),
               Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                  image: DecorationImage(
-                    image: FileImage(identity.getProfilePhoto()),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                height: 50,
+                margin: const EdgeInsets.all(16),
                 width: 50,
+                height: 50,
+                child: ProfilePhoto(trip.customer.profilePhotoFile),
               ),
               SizedBox(width: 16),
               Text(
@@ -372,7 +369,6 @@ class _HomePageState extends State<HomePage> {
               },
             ),
           ),
-          // SizedBox(height: 16),
         ],
       ),
     );
@@ -393,7 +389,7 @@ class _HomePageState extends State<HomePage> {
                 margin: const EdgeInsets.all(16),
                 width: 50,
                 height: 50,
-                child: ProfilePhoto(_customerPhoto),
+                child: ProfilePhoto(trip.customer.profilePhotoFile),
               ),
               Center(
                 child: Text(
@@ -461,8 +457,13 @@ class _HomePageState extends State<HomePage> {
                   break;
                 default:
                   await tripService.complete();
-                  // state = HomeState.pickUp;
-                  // print('dropped off');
+                  // Navigator.pushReplacementNamed(
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    ratingRoute,
+                    (Route<dynamic> route) => false,
+                    arguments: RatingArguments(tripService),
+                  );
                   break;
               }
               setState(() {});

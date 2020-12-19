@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:hda_driver/resources/misc/base-url.dart';
@@ -10,6 +11,7 @@ class SocketService {
   Identity identity;
   WebSocket webSocket;
   BehaviorSubject<String> subject = new BehaviorSubject<String>();
+  StreamSubscription<String> streamSubscription;
 
   final String url = socketHost;
 
@@ -38,13 +40,16 @@ class SocketService {
 
   void listen(void listener(value)) {
     print('listener attached ');
-    subject.stream.listen(listener);
+    if (!subject.hasListener) {
+      streamSubscription = subject.stream.listen(listener);
+    }
   }
 
-  // void removeListener(Function listener) {
-  //   if(subject.hasListener) {
-  //   }
-  // }
+  Future unsubscribe() async {
+    if (subject.hasListener) {
+      return streamSubscription.cancel();
+    }
+  }
 
   void disconnect() {
     webSocket?.close();

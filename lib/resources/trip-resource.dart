@@ -55,4 +55,16 @@ class TripResource extends AbstractResource {
     if (res.statusCode == 200) return json.decode(res.body);
     return null;
   }
+
+  Future rateCustomer(int id, int rating, String comments) async {
+    Response res = await client.put(
+        Uri.http(getUrlPrefix(), baseUrl + "$url/$id/rate-customer"),
+        body: {
+          'rating': rating.toString(),
+          'additionalComments': comments,
+        });
+
+    if (res.statusCode == 200) return json.decode(res.body);
+    return null;
+  }
 }
