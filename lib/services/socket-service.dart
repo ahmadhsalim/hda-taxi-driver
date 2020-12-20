@@ -45,13 +45,8 @@ class SocketService {
     }
   }
 
-  Future unsubscribe() async {
-    if (subject.hasListener) {
-      return streamSubscription.cancel();
-    }
-  }
-
-  void disconnect() {
+  void dispose() {
+    streamSubscription?.cancel();
     webSocket?.close();
   }
 

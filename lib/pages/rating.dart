@@ -22,7 +22,7 @@ class RatingPage extends StatefulWidget {
 
 class _RatingPageState extends State<RatingPage> {
   Identity identity = getIt<Identity>();
-  int _rating = 1;
+  int _rating = 0;
   TextEditingController _commentsController;
 
   OutlineInputBorder commentBorder = OutlineInputBorder(
@@ -35,6 +35,12 @@ class _RatingPageState extends State<RatingPage> {
   initState() {
     _commentsController = TextEditingController();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _commentsController.dispose();
+    super.dispose();
   }
 
   Widget showPicture(rating) {
@@ -62,7 +68,6 @@ class _RatingPageState extends State<RatingPage> {
   @override
   Widget build(BuildContext context) {
     Trip trip = widget.tripService.getTrip();
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -198,6 +203,7 @@ class _RatingPageState extends State<RatingPage> {
                       child: ObButton(
                         text: 'Rate Passenger',
                         filled: true,
+                        disabled: _rating == 0,
                         onPressed: () {
                           widget.tripService
                               .rateCustomer(_rating, _commentsController.text);

@@ -1,7 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:hda_driver/services/analytics-service.dart';
 import 'package:hda_driver/services/identity-service.dart';
-import 'package:hda_driver/services/socket-service.dart';
 import 'package:hda_driver/services/trip-service.dart';
 
 GetIt getIt = GetIt.instance;
@@ -10,5 +9,5 @@ setupServiceLocator() {
   getIt.registerSingleton<Identity>(Identity());
   getIt.registerSingleton<TripService>(TripService());
   getIt.registerSingleton<AnalyticsService>(AnalyticsService());
-  getIt.registerSingleton<SocketService>(SocketService());
+  // getIt.registerSingleton<SocketService>(SocketService());
 }

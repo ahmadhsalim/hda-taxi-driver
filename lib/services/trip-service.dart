@@ -113,7 +113,6 @@ class TripService {
     try {
       TripResource resource = TripResource();
       var res = await resource.complete(_trip.id);
-      _trip = null;
 
       if (res == null) return false;
 
@@ -124,8 +123,12 @@ class TripService {
     }
   }
 
-  Future rateCustomer(int rating, String comments) {
-    TripResource resource = TripResource();
-    return resource.rateCustomer(_trip.id, rating, comments);
+  Future rateCustomer(int rating, String comments) async {
+    try {
+      TripResource resource = TripResource();
+      await resource.rateCustomer(_trip.id, rating, comments);
+    } catch (e) {
+      print(e);
+    }
   }
 }

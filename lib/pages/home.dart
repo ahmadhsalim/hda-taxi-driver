@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -38,28 +37,32 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   static double waitingDuration = 30000;
 
-  final _key = GlobalKey<ScaffoldState>();
-  final Identity identity = getIt<Identity>();
-  final SocketService socket = getIt<SocketService>();
-  final DriverResource driverResource = DriverResource();
-  final TripService tripService = TripService();
+  final Identity _identity = getIt<Identity>();
+  final SocketService _socket = SocketService();
+  final DriverResource _driverResource = DriverResource();
+  final TripService _tripService = TripService();
   Completer<GoogleMapController> _controller;
-  CameraPosition currentPosition = LocationService.defaultPosition;
-  Driver driver;
-  bool onOffLoading = false;
-  double waitingIndication = 0;
+  CameraPosition _currentPosition = LocationService.defaultPosition;
+  Driver _driver;
+  bool _onOffLoading = false;
+  bool _isAccepting = false;
+  bool _isPickDrop = false;
+  double _waitingIndication = 0;
 
-  HomeState state = HomeState.offline;
+  HomeState _pageState = HomeState.offline;
   Timer _timer;
 
   @override
   void initState() {
+    _socket.initialize();
+    _tripService.clearTrip();
     _controller = Completer();
-    driver = identity.getDriver();
+    _driver = _identity.getDriver();
+    _pageState = HomeState.offline;
 
-    if (driver.onDuty) {
-      socket.listen(socketListener);
-      state = HomeState.online;
+    if (_driver.onDuty) {
+      _socket.listen(socketListener);
+      _pageState = HomeState.online;
     }
     super.initState();
   }
@@ -68,9 +71,10 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _timer?.cancel();
     _disposeMapController();
-    // socket.unsubscribe();
+    _socket.dispose();
 
     super.dispose();
+    print('HOME PAGE DISPOSED');
   }
 
   Future<void> _disposeMapController() async {
@@ -81,80 +85,80 @@ class _HomePageState extends State<HomePage> {
   void socketListener(event) async {
     var data = Map<String, dynamic>.from(json.decode(event));
     if (data.containsKey('channel') && data['channel'] == 'trip-request') {
-      print([data['tripId'], 'loading trip from socket']);
+      print(['loading trip', data['tripId'], ' from socket']);
       await loadTrip(data['tripId']);
       showTimer();
     }
   }
 
   showTimer() {
-    waitingIndication = 0;
+    _waitingIndication = 0;
     _timer = Timer.periodic(Duration(milliseconds: 100), (Timer timer) {
-      if (waitingIndication >= waitingDuration) {
+      if (_waitingIndication >= waitingDuration) {
         timer.cancel();
         return acceptTimeout();
-        // waitingIndication = 0;
+        // _waitingIndication = 0;
       }
 
       setState(() {
-        waitingIndication += 100;
+        _waitingIndication += 100;
       });
     });
   }
 
   Future acceptTimeout() async {
     setState(() {
-      state = HomeState.online;
-      tripService.clearTrip();
+      _pageState = HomeState.online;
+      _tripService.clearTrip();
     });
-    await tripService.missed();
+    await _tripService.missed();
   }
 
   Future loadTrip(id) async {
-    await tripService.loadTrip(id);
+    await _tripService.loadTrip(id);
     setState(() {
-      state = HomeState.accepting;
+      _pageState = HomeState.accepting;
     });
   }
 
   onOffSwitch(bool value) async {
-    if (onOffLoading) return;
+    if (_onOffLoading) return;
 
     setState(() {
-      onOffLoading = true;
-      tripService.clearTrip();
+      _onOffLoading = true;
+      _tripService.clearTrip();
     });
     try {
       var result;
       if (value) {
-        result = await driverResource.online();
+        result = await _driverResource.online();
         LocationService.getCurrentLocation().then((Position position) {
           setState(() {
-            currentPosition = LocationService.getCameraPosition(position);
+            _currentPosition = LocationService.getCameraPosition(position);
           });
         });
       } else {
-        result = await driverResource.offline();
+        result = await _driverResource.offline();
       }
 
       if (result != null) {
         setState(() {
-          driver.onDuty = value;
-          if (driver.onDuty)
-            state = HomeState.online;
+          _driver.onDuty = value;
+          if (_driver.onDuty)
+            _pageState = HomeState.online;
           else
-            state = HomeState.offline;
+            _pageState = HomeState.offline;
         });
       }
     } catch (e) {} finally {
       setState(() {
-        onOffLoading = false;
+        _onOffLoading = false;
       });
     }
   }
 
   String getTitle() {
-    return state == HomeState.offline ? 'Your Offline' : 'Accepting Jobs';
+    return _pageState == HomeState.offline ? 'Your Offline' : 'Accepting Jobs';
   }
 
   Widget displayItem(String title, String subtitle) {
@@ -209,7 +213,7 @@ class _HomePageState extends State<HomePage> {
     return GoogleMap(
       mapType: MapType.normal,
       myLocationEnabled: true,
-      initialCameraPosition: currentPosition,
+      initialCameraPosition: _currentPosition,
       // zoomControlsEnabled: false,
       // myLocationButtonEnabled: true,
       // scrollGesturesEnabled: false,
@@ -239,14 +243,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget incoming() {
-    Trip trip = tripService.getTrip();
+    Trip trip = _tripService.getTrip();
 
     return Container(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           LinearProgressIndicator(
-            value: waitingIndication / waitingDuration,
+            value: _waitingIndication / waitingDuration,
             backgroundColor: Colors.transparent,
             valueColor: AlwaysStoppedAnimation(MainTheme.primaryColour),
           ),
@@ -347,7 +351,12 @@ class _HomePageState extends State<HomePage> {
             child: ObButton(
               text: 'Accept Job',
               onPressed: () async {
-                bool accepted = await tripService.acceptJob();
+                if (_isAccepting) return;
+
+                setState(() {
+                  _isAccepting = true;
+                });
+                bool accepted = await _tripService.acceptJob();
                 if (!accepted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     backgroundColor: Colors.red[400],
@@ -357,15 +366,14 @@ class _HomePageState extends State<HomePage> {
                     ),
                     duration: Duration(seconds: 3),
                   ));
-                  setState(() {
-                    state = HomeState.accepting;
-                  });
+                  _pageState = HomeState.accepting;
                 } else {
-                  setState(() {
-                    state = HomeState.pickUp;
-                    _timer?.cancel();
-                  });
+                  _pageState = HomeState.pickUp;
+                  _timer?.cancel();
                 }
+                setState(() {
+                  _isAccepting = false;
+                });
               },
             ),
           ),
@@ -375,7 +383,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget onTrip() {
-    Trip trip = tripService.getTrip();
+    Trip trip = _tripService.getTrip();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -448,29 +456,35 @@ class _HomePageState extends State<HomePage> {
         Padding(
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
           child: ObButton(
-            text: state == HomeState.pickUp ? 'Pick Up' : 'Drop Off',
+            text: _pageState == HomeState.pickUp ? 'Pick Up' : 'Drop Off',
             onPressed: () async {
-              switch (state) {
+              if (_isPickDrop) return;
+
+              setState(() {
+                _isPickDrop = true;
+              });
+              switch (_pageState) {
                 case HomeState.pickUp:
-                  await tripService.pickUp();
-                  state = HomeState.onTrip;
+                  await _tripService.pickUp();
+                  _pageState = HomeState.onTrip;
                   break;
                 default:
-                  await tripService.complete();
-                  // Navigator.pushReplacementNamed(
+                  await _tripService.complete();
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     ratingRoute,
                     (Route<dynamic> route) => false,
-                    arguments: RatingArguments(tripService),
+                    arguments: RatingArguments(_tripService),
                   );
                   break;
               }
-              setState(() {});
+              setState(() {
+                _isPickDrop = false;
+              });
             },
           ),
         ),
-        state == HomeState.pickUp
+        _pageState == HomeState.pickUp
             ? Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
                 child: ObButton(
@@ -478,9 +492,9 @@ class _HomePageState extends State<HomePage> {
                   filled: false,
                   textColor: Color(0xFF707070),
                   onPressed: () async {
-                    await tripService.cancel();
+                    await _tripService.cancel();
                     setState(() {
-                      state = HomeState.online;
+                      _pageState = HomeState.online;
                     });
                   },
                 ),
@@ -491,8 +505,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget route() {
-    if (state == HomeState.pickUp || state == HomeState.onTrip) {
-      Trip trip = tripService.getTrip();
+    if (_pageState == HomeState.pickUp || _pageState == HomeState.onTrip) {
+      Trip trip = _tripService.getTrip();
 
       return Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -575,7 +589,8 @@ class _HomePageState extends State<HomePage> {
                       onPressed: () async {
                         String url;
                         Location dest = trip.start;
-                        if (state == HomeState.onTrip) dest = trip.dropOffs[0];
+                        if (_pageState == HomeState.onTrip)
+                          dest = trip.dropOffs[0];
 
                         if (Platform.isIOS) {
                           url =
@@ -608,7 +623,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget showBottomBar() {
-    switch (state) {
+    switch (_pageState) {
       case HomeState.accepting:
         return incoming();
         break;
@@ -622,17 +637,17 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (driver == null)
+    if (_driver == null)
       return Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation(Color(0xAA9E9E9E)),
+        ),
       );
 
     return Scaffold(
-      key: _key,
       body: Container(
         margin: MediaQuery.of(context).padding,
         color: Colors.white,
-        // color: Color.fromARGB(255, 247, 247, 247),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
@@ -656,7 +671,7 @@ class _HomePageState extends State<HomePage> {
                               blurRadius: 10)
                         ],
                         image: DecorationImage(
-                          image: FileImage(identity.getProfilePhoto()),
+                          image: FileImage(_identity.getProfilePhoto()),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -669,13 +684,13 @@ class _HomePageState extends State<HomePage> {
                           TextStyle(fontSize: 20, fontWeight: FontWeight.w400)),
                   Switch(
                     activeColor: MainTheme.primaryColour,
-                    value: driver.onDuty,
-                    onChanged: onOffLoading ? null : onOffSwitch,
+                    value: _driver.onDuty,
+                    onChanged: _onOffLoading ? null : onOffSwitch,
                   ),
                 ],
               ),
             ),
-            onOffLoading
+            _onOffLoading
                 ? LinearProgressIndicator(
                     backgroundColor: Colors.transparent,
                     valueColor: AlwaysStoppedAnimation(Colors.grey[300]),
@@ -684,7 +699,7 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: Stack(
                 children: [
-                  state == HomeState.offline
+                  _pageState == HomeState.offline
                       ? offlineDisplay(context)
                       // : SizedBox.expand(),
                       : onlineDisplay(context),
