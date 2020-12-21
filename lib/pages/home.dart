@@ -23,6 +23,7 @@ import 'package:hda_driver/styles/MainTheme.dart';
 import 'package:hda_driver/widgets/animation-box.dart';
 import 'package:hda_driver/widgets/ob-button.dart';
 import 'package:hda_driver/widgets/profile-photo.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 enum HomeState { offline, online, accepting, pickUp, onTrip }
@@ -36,6 +37,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   static double waitingDuration = 30000;
+  final NumberFormat nf = NumberFormat.currency(name: 'MVR ');
 
   final Identity _identity = getIt<Identity>();
   final SocketService _socket = SocketService();
@@ -49,6 +51,11 @@ class _HomePageState extends State<HomePage> {
   bool _isPickDrop = false;
   double _waitingIndication = 0;
 
+  double _earnedToday = 0.0;
+  double _totalMissed = 0.0;
+  double _totalCompleted = 0.0;
+  double _averageRating = 0.0;
+
   HomeState _pageState = HomeState.offline;
   Timer _timer;
 
@@ -59,6 +66,7 @@ class _HomePageState extends State<HomePage> {
     _controller = Completer();
     _driver = _identity.getDriver();
     _pageState = HomeState.offline;
+    _loadStats();
 
     if (_driver.onDuty) {
       _socket.listen(socketListener);
@@ -74,7 +82,6 @@ class _HomePageState extends State<HomePage> {
     _socket.dispose();
 
     super.dispose();
-    print('HOME PAGE DISPOSED');
   }
 
   Future<void> _disposeMapController() async {
@@ -85,10 +92,19 @@ class _HomePageState extends State<HomePage> {
   void socketListener(event) async {
     var data = Map<String, dynamic>.from(json.decode(event));
     if (data.containsKey('channel') && data['channel'] == 'trip-request') {
-      print(['loading trip', data['tripId'], ' from socket']);
       await loadTrip(data['tripId']);
       showTimer();
     }
+  }
+
+  void _loadStats() async {
+    var stats = await _driverResource.getStats();
+    setState(() {
+      _earnedToday = double.parse(stats['earnedtoday']) / 100;
+      _averageRating = double.parse(stats['averaterating']);
+      _totalCompleted = double.parse(stats['totalcompleted']);
+      _totalMissed = double.parse(stats['totalmissed']);
+    });
   }
 
   showTimer() {
@@ -97,7 +113,6 @@ class _HomePageState extends State<HomePage> {
       if (_waitingIndication >= waitingDuration) {
         timer.cancel();
         return acceptTimeout();
-        // _waitingIndication = 0;
       }
 
       setState(() {
@@ -107,11 +122,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future acceptTimeout() async {
+    await _tripService.missed();
     setState(() {
       _pageState = HomeState.online;
-      _tripService.clearTrip();
     });
-    await _tripService.missed();
   }
 
   Future loadTrip(id) async {
@@ -214,9 +228,6 @@ class _HomePageState extends State<HomePage> {
       mapType: MapType.normal,
       myLocationEnabled: true,
       initialCameraPosition: _currentPosition,
-      // zoomControlsEnabled: false,
-      // myLocationButtonEnabled: true,
-      // scrollGesturesEnabled: false,
       onMapCreated: (GoogleMapController controller) {
         _controller?.complete(controller);
       },
@@ -230,12 +241,12 @@ class _HomePageState extends State<HomePage> {
           Container(
             height: 89,
             color: Color.fromARGB(255, 247, 247, 247),
-            child: displayItem('MVR 60.00', 'Earned Today'),
+            child: displayItem(nf.format(_earnedToday), 'Earned Today'),
           ),
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            displayItem(2.8.toStringAsFixed(1) + '%', 'Acceptance'),
-            displayItem(5.4.toStringAsFixed(1) + '%', 'Ratings'),
-            displayItem(4.7.toStringAsFixed(1) + '%', 'Cancellation'),
+            displayItem(_totalCompleted.toStringAsFixed(1) + '%', 'Acceptance'),
+            displayItem(_averageRating.toStringAsFixed(1) + '%', 'Ratings'),
+            displayItem(_totalMissed.toStringAsFixed(1) + '%', 'Cancellation'),
           ]),
         ],
       ),

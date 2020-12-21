@@ -71,11 +71,14 @@ class TripService {
     try {
       TripResource resource = TripResource();
       var res = await resource.missed(_trip.id);
+
+      clearTrip();
       if (res == null) return false;
 
       return true;
     } catch (e) {
       print(e);
+      clearTrip();
       return false;
     }
   }

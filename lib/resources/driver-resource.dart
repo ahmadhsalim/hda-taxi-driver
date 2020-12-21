@@ -20,6 +20,10 @@ class DriverResource extends AbstractResource {
     return fromJson(res);
   }
 
+  Future getStats() {
+    return httpGet("$url/me/stats");
+  }
+
   Future<ResourceCollection<Vehicle>> myVehicles({List<String> include}) async {
     var res = await httpGet("$url/me/vehicles",
         params: {"include": include?.join(",")});
