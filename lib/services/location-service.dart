@@ -1,3 +1,4 @@
+import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -37,47 +38,51 @@ class LocationService {
   static Future<HdaLocation.Location> getLocationAddress(
       CameraPosition position) async {
     List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.target.latitude, position.target.longitude);
+      position.target.latitude,
+      position.target.longitude,
+    );
     Placemark placeMark = placemarks[0];
     String name = placeMark.name;
     String subLocality = placeMark.subLocality;
-    String thoroughfare = placeMark.thoroughfare;
-    String locality = placeMark.locality;
-    // String administrativeArea = placeMark.administrativeArea;
-    // String postalCode = placeMark.postalCode;
-    // String country = placeMark.country;
-    // String subThoroughfare = placeMark.subThoroughfare;
-    // print(['name', name]);
-    // print(['subLocality', subLocality]);
-    // print(['locality', locality]);
-    // print(['subThoroughfare', subThoroughfare]);
-    // print(['thoroughfare', thoroughfare]);
-    // print(['', thoroughfare.isEmpty]);
-
+    String street = placeMark.street;
     String address = '';
 
-    if (name.isNotEmpty) {
-      if (thoroughfare.isNotEmpty) {
-        if (thoroughfare == name)
-          address = name;
-        else
-          address = "$name, $thoroughfare";
-      } else {
-        address = name;
-      }
-    } else if (thoroughfare.isNotEmpty) {
-      address = thoroughfare;
-    } else if (locality.isNotEmpty) {
-      address = locality;
-    } else {
-      address = subLocality;
+    if (name.isNotEmpty) address = name;
+    if (street.isNotEmpty) {
+      address = address.isEmpty
+          ? street
+          : street.indexOf(name) == 0
+              ? street
+              : "$address, $street";
     }
+    if (subLocality.isNotEmpty && subLocality != name)
+      address = address.isEmpty ? subLocality : "$address, $subLocality";
+    print([placeMark, address]);
 
     return HdaLocation.Location(
-        name: address,
-        latitude: position.target.latitude,
-        longitude: position.target.longitude,
-        type: 'location');
-    // return {'address': address, 'position': position};
+      name: address,
+      latitude: position.target.latitude,
+      longitude: position.target.longitude,
+      type: 'location',
+    );
+  }
+
+  static Future getDistanceTo(HdaLocation.Location destination) async {
+    Position here = await LocationService.getCurrentLocation();
+    String key = 'AIzaSyDuoPb3Do5LEqOf6TuMSr8YUOc5UplPi2s';
+    String url = 'maps.googleapis.com';
+    String path = '/maps/api/distancematrix/json';
+    var res = await http.get(Uri.https(
+      url,
+      path,
+      {
+        'key': key,
+        'units': 'metric',
+        'origins': '${here.latitude},${here.longitude}',
+        'destinations': '${destination.latitude},${destination.longitude}',
+      },
+    ));
+
+    return res;
   }
 }

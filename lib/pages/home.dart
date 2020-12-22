@@ -50,6 +50,7 @@ class _HomePageState extends State<HomePage> {
   bool _isAccepting = false;
   bool _isPickDrop = false;
   double _waitingIndication = 0;
+  double _tripLength;
 
   double _earnedToday = 0.0;
   double _totalMissed = 0.0;
@@ -90,12 +91,31 @@ class _HomePageState extends State<HomePage> {
   }
 
   void socketListener(event) async {
+    print('what da fuuuk');
     var data = Map<String, dynamic>.from(json.decode(event));
     if (data.containsKey('channel') && data['channel'] == 'trip-request') {
-      await Future.wait([
-        _loadTrip(data['tripId']),
-      ]);
+      setState(() {
+        _tripLength = null;
+      });
+      await _loadTrip(data['tripId']);
+      _calculateDistance();
       _showTimer();
+    }
+  }
+
+  void _calculateDistance() async {
+    try {
+      var distance =
+          await LocationService.getDistanceTo(_tripService.getTrip().start);
+      distance = json.decode(distance.body);
+      print(distance);
+      if (distance.containsKey('status') &&
+          distance['status'] == 'REQUEST_DENIED') {
+        print('REQUEST_DENIED when fetching distance');
+      }
+      _tripLength = 4;
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -118,7 +138,7 @@ class _HomePageState extends State<HomePage> {
       }
 
       setState(() {
-        _waitingIndication += 10;
+        _waitingIndication += 100;
       });
     });
   }
