@@ -11,9 +11,10 @@ class TripResource extends AbstractResource {
   @override
   final Function fromJson = Trip.fromJson;
 
-  Future acceptJob(int id) async {
+  Future acceptJob(int id, double latitude, double longitude) async {
     Response res = await client.put(
       Uri.http(getUrlPrefix(), baseUrl + "$url/$id/accept"),
+      body: {'latitude': latitude, 'longitude': longitude},
     );
 
     if (res.statusCode == 200) return true;

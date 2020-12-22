@@ -53,10 +53,10 @@ class TripService {
     _trip.vehicleType = type;
   }
 
-  Future<bool> acceptJob() async {
+  Future<bool> acceptJob(double latitude, double longitude) async {
     try {
       TripResource resource = TripResource();
-      var res = await resource.acceptJob(_trip.id);
+      var res = await resource.acceptJob(_trip.id, latitude, longitude);
       if (res == null) return false;
       await loadTrip(_trip.id);
 

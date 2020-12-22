@@ -92,8 +92,10 @@ class _HomePageState extends State<HomePage> {
   void socketListener(event) async {
     var data = Map<String, dynamic>.from(json.decode(event));
     if (data.containsKey('channel') && data['channel'] == 'trip-request') {
-      await loadTrip(data['tripId']);
-      showTimer();
+      await Future.wait([
+        _loadTrip(data['tripId']),
+      ]);
+      _showTimer();
     }
   }
 
@@ -107,7 +109,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  showTimer() {
+  _showTimer() {
     _waitingIndication = 0;
     _timer = Timer.periodic(Duration(milliseconds: 100), (Timer timer) {
       if (_waitingIndication >= waitingDuration) {
@@ -116,7 +118,7 @@ class _HomePageState extends State<HomePage> {
       }
 
       setState(() {
-        _waitingIndication += 100;
+        _waitingIndication += 10;
       });
     });
   }
@@ -128,14 +130,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future loadTrip(id) async {
+  Future _loadTrip(id) async {
     await _tripService.loadTrip(id);
     setState(() {
       _pageState = HomeState.accepting;
     });
   }
 
-  onOffSwitch(bool value) async {
+  _onOffSwitch(bool value) async {
     if (_onOffLoading) return;
 
     setState(() {
@@ -367,7 +369,10 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   _isAccepting = true;
                 });
-                bool accepted = await _tripService.acceptJob();
+
+                Position position = await LocationService.getCurrentLocation();
+                bool accepted = await _tripService.acceptJob(
+                    position.latitude, position.longitude);
                 if (!accepted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     backgroundColor: Colors.red[400],
@@ -696,7 +701,7 @@ class _HomePageState extends State<HomePage> {
                   Switch(
                     activeColor: MainTheme.primaryColour,
                     value: _driver.onDuty,
-                    onChanged: _onOffLoading ? null : onOffSwitch,
+                    onChanged: _onOffLoading ? null : _onOffSwitch,
                   ),
                 ],
               ),
