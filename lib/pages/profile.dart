@@ -1,4 +1,3 @@
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hda_driver/models/driver.dart';
 import 'package:hda_driver/routes/constants.dart';
 import 'package:hda_driver/services/identity-service.dart';
@@ -7,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hda_driver/widgets/profile-photo.dart';
 
 final storage = FlutterSecureStorage();
 
@@ -20,6 +20,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   Identity identity = getIt<Identity>();
   final _key = GlobalKey<ScaffoldState>();
+
   Driver driver;
 
   @override
@@ -49,11 +50,7 @@ class _ProfilePageState extends State<ProfilePage> {
         width: 100,
         // margin: const EdgeInsets.all(18),
         child: Center(
-          child: SvgPicture.asset(
-            'assets/avatar_placeholder.svg',
-            width: 100,
-            height: 100,
-          ),
+          child: ProfilePhoto(identity.getDriver().profilePhotoFile),
         ),
       ), //Image(image: AssetImage('assets/logo.png')),
     );

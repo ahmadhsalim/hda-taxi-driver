@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as fileUtil;
 import 'package:hda_driver/resources/misc/base-url.dart';
-import 'package:hda_driver/services/identity-service.dart';
-import 'package:hda_driver/services/service-locator.dart';
 import 'package:path_provider/path_provider.dart';
 
 typedef void OnDownloadProgressCallback(int receivedBytes, int totalBytes);
@@ -25,7 +23,10 @@ class FileResource {
   String get url => "files";
   String get host => apiHost;
   String get baseUrl => apiBaseUrl;
-  Identity identity = getIt<Identity>();
+
+  final String token;
+
+  FileResource(this.token);
 
   Future<String> fileUpload(
       File file, OnUploadProgressCallback onUploadProgress) async {
@@ -41,7 +42,7 @@ class FileResource {
         .set(HttpHeaders.contentTypeHeader, ContentType.binary.subType);
 
     request.headers.add("filename", fileUtil.basename(file.path));
-    request.headers.add(HttpHeaders.authorizationHeader, identity.getToken());
+    request.headers.add(HttpHeaders.authorizationHeader, token);
 
     request.contentLength = totalByteLength;
 
@@ -89,7 +90,7 @@ class FileResource {
 
     request.headers
         .add(HttpHeaders.contentTypeHeader, "application/octet-stream");
-    request.headers.add(HttpHeaders.authorizationHeader, identity.getToken());
+    request.headers.add(HttpHeaders.authorizationHeader, token);
 
     var httpResponse = await request.close();
 

@@ -1,14 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hda_driver/models/driver.dart';
 import 'package:hda_driver/resources/driver-resource.dart';
+import 'package:hda_driver/resources/file-resource.dart';
 import 'package:hda_driver/services/identity-service.dart';
+import 'package:hda_driver/services/image-select-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hda_driver/widgets/ob-button.dart';
+import 'package:hda_driver/widgets/profile-photo.dart';
 
 final storage = FlutterSecureStorage();
 
@@ -21,25 +25,26 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   Identity identity = getIt<Identity>();
-  final _key = GlobalKey<ScaffoldState>();
 
   final GlobalKey<FormState> _profileFormKey = GlobalKey<FormState>();
   TextEditingController nameController;
   TextEditingController mobileNumberController;
   TextEditingController emailController;
-  TextEditingController emergencyContactController;
+  File profilePhoto;
 
+  double profilePhotoProgress = 0;
+  bool profilePhotoUploading = false;
   bool isUntouched = true;
 
   bool isNameValid = true;
   bool isMobileNumberValid = true;
   bool isEmailValid = true;
-  bool isEmergencyContactValid = true;
 
   @override
   initState() {
     identity.getCurrentDriver().then((value) {
       setState(() {
+        profilePhoto = value.profilePhotoFile;
         Driver driver = value;
         nameController = TextEditingController(text: driver.name);
         mobileNumberController = TextEditingController(text: driver.mobile);
@@ -49,22 +54,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     super.initState();
   }
-
-  void displayDialog(context, title, text) => showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: title != null ? Text(title) : null,
-          content: Text(text),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Ok'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        ),
-      );
 
   String _nameValidator(String value) {
     setState(() {
@@ -103,20 +92,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     } else {
       setState(() {
         isEmailValid = true;
-      });
-      return null;
-    }
-  }
-
-  String _emergencyContactValidator(String value) {
-    setState(() {
-      isEmergencyContactValid = false;
-    });
-    if (value == null || value.length == 0) {
-      return 'Emergency contact is required';
-    } else {
-      setState(() {
-        isEmergencyContactValid = true;
       });
       return null;
     }
@@ -221,14 +196,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     duration: Duration(seconds: 3),
                     backgroundColor: Colors.red[700],
                   ));
-
-                  // displayDialog(context, null, "Unable to register.");
                 }
               }
-            } catch (e) {
-              print([e, 'update failed']);
-            } finally {
-              if (isValid) Loader.hide();
+            } catch (e) {} finally {
+              try {
+                Loader.hide();
+              } catch (e) {
+                print('error hiding loader');
+              }
             }
           },
         ));
@@ -248,27 +223,89 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ]),
         height: 100,
         width: 100,
-        // margin: const EdgeInsets.all(18),
-        child: Center(
-          child: SvgPicture.asset(
-            'assets/avatar_placeholder.svg',
-            width: 100,
-            height: 100,
-          ),
-        ),
+        child: profilePhoto == null
+            ? Center(child: ProfilePhoto(identity.getDriver().profilePhotoFile))
+            : Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(100)),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: FileImage(profilePhoto),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: SizedBox(
+                      width: 94,
+                      height: 94,
+                      child: profilePhotoProgress == null
+                          ? SizedBox.shrink()
+                          : CircularProgressIndicator(
+                              value: profilePhotoProgress,
+                              strokeWidth: 8,
+                              valueColor:
+                                  AlwaysStoppedAnimation(Color(0x669E9E9E)),
+                            ),
+                    ),
+                  ),
+                  profilePhotoProgress == null
+                      ? SizedBox.shrink()
+                      : Center(
+                          child: Text(
+                            "${profilePhotoProgress.toInt()}%",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                ],
+              ),
       ), //Image(image: AssetImage('assets/logo.png')),
     );
   }
 
+  Future upload() async {
+    FileResource fileResource = FileResource(identity.getToken());
+    String filename = await fileResource.fileUpload(
+      profilePhoto,
+      (int sentBytes, int totalBytes) {
+        setState(() {
+          profilePhotoProgress = sentBytes * 100 / totalBytes;
+        });
+      },
+    );
+    DriverResource resource = DriverResource();
+    Driver driver = Driver(profilePhoto: filename);
+    await resource.updateDocuments(driver);
+    await identity.fetchProfilePhoto();
+    setState(() {});
+  }
+
   Widget _buildPhotoUpload(context) {
     return Center(
-      child: GestureDetector(
+      child: InkWell(
         child: Text(
           'Update image',
           style: TextStyle(color: Color(0xFF3F44AB), fontSize: 14),
         ),
-        onTap: () {
-          displayDialog(context, null, "Coming soon.");
+        onTap: () async {
+          imageSelect(context, (File photo) async {
+            if (photo != null) {
+              setState(() {
+                profilePhoto = photo;
+                profilePhotoUploading = true;
+              });
+              await upload();
+
+              setState(() {
+                profilePhotoUploading = false;
+                profilePhotoProgress = null;
+                isUntouched = false;
+              });
+            }
+          });
         },
       ),
     );
@@ -285,7 +322,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         color: Colors.white,
       ),
       child: Scaffold(
-        key: _key,
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.white,
@@ -342,12 +378,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               isValid: isEmailValid,
                               validator: _emailValidator,
                               controller: emailController),
-                          SizedBox(height: 16),
-                          _buildTextField(
-                              label: 'Emergency Contact',
-                              isValid: isEmergencyContactValid,
-                              validator: _emergencyContactValidator,
-                              controller: emergencyContactController),
                           _buildUpdateButton(context),
                           SizedBox(height: 8),
                         ],

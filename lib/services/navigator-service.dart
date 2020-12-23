@@ -11,8 +11,8 @@ import 'package:hda_driver/services/service-locator.dart';
 
 Future getProfilePhoto() async {
   try {
-    final FileResource fileResource = FileResource();
     final Identity identity = getIt<Identity>();
+    final FileResource fileResource = FileResource(identity.getToken());
 
     String photoPath = await fileResource.fileDownload(
       fileName: identity.getDriver().profilePhoto,

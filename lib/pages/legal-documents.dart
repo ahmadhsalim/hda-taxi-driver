@@ -191,7 +191,7 @@ class _LegalDocumentsUploadPageState extends State<LegalDocumentsUploadPage> {
   }
 
   Future<List<String>> uploadFiles() async {
-    FileResource fileResource = FileResource();
+    FileResource fileResource = FileResource(identity.getToken());
     Future<String> profilePhotoRes =
         fileResource.fileUpload(profilePhoto, (int sentBytes, int totalBytes) {
       setState(() {

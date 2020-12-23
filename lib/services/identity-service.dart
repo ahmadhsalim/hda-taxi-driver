@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:hda_driver/models/driver.dart';
 import 'package:hda_driver/resources/driver-resource.dart';
+import 'package:hda_driver/resources/file-resource.dart';
 import 'package:hda_driver/routes/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -65,6 +66,22 @@ class Identity {
       return _driver;
     } else {
       return driver;
+    }
+  }
+
+  Future fetchProfilePhoto() async {
+    try {
+      final FileResource fileResource = FileResource(getToken());
+
+      String photoPath = await fileResource.fileDownload(
+        fileName: getDriver().profilePhoto,
+        // onDownloadProgress: (receivedBytes, totalBytes) {
+        //   print([receivedBytes, totalBytes]);
+        // },
+      );
+      if (photoPath != null) setProfilePhoto(photoPath);
+    } catch (e) {
+      print(e);
     }
   }
 

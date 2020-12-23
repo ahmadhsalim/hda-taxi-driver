@@ -5,6 +5,8 @@ import 'package:hda_driver/models/trip.dart';
 import 'package:hda_driver/models/vehicle-type.dart';
 import 'package:hda_driver/resources/file-resource.dart';
 import 'package:hda_driver/resources/trip-resource.dart';
+import 'package:hda_driver/services/identity-service.dart';
+import 'package:hda_driver/services/service-locator.dart';
 
 class TripService {
   Trip _trip;
@@ -13,7 +15,8 @@ class TripService {
   // TripService();
 
   Future loadTrip(int id) async {
-    FileResource fileResource = FileResource();
+    Identity identity = getIt<Identity>();
+    FileResource fileResource = FileResource(identity.getToken());
     TripResource resource = TripResource();
     _trip = await resource.find(id,
         params: {'include': 'start,dropOffs,vehicleType.fare,customer'});
