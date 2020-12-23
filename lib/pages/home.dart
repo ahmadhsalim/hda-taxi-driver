@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:dotted_line/dotted_line.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hda_driver/models/distance-matrix.dart';
 import 'package:hda_driver/models/driver.dart';
 import 'package:hda_driver/models/location.dart';
 import 'package:hda_driver/models/trip.dart';
@@ -50,7 +51,8 @@ class _HomePageState extends State<HomePage> {
   bool _isAccepting = false;
   bool _isPickDrop = false;
   double _waitingIndication = 0;
-  double _tripLength;
+  DistanceMatrix _distanceMatrix;
+  bool _loadingDistance = false;
 
   double _earnedToday = 0.0;
   double _totalMissed = 0.0;
@@ -91,11 +93,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void socketListener(event) async {
-    print('what da fuuuk');
     var data = Map<String, dynamic>.from(json.decode(event));
     if (data.containsKey('channel') && data['channel'] == 'trip-request') {
       setState(() {
-        _tripLength = null;
+        _distanceMatrix = null;
       });
       await _loadTrip(data['tripId']);
       _calculateDistance();
@@ -105,17 +106,26 @@ class _HomePageState extends State<HomePage> {
 
   void _calculateDistance() async {
     try {
+      setState(() {
+        _loadingDistance = true;
+      });
       var distance =
           await LocationService.getDistanceTo(_tripService.getTrip().start);
       distance = json.decode(distance.body);
-      print(distance);
-      if (distance.containsKey('status') &&
-          distance['status'] == 'REQUEST_DENIED') {
-        print('REQUEST_DENIED when fetching distance');
+      if (distance.containsKey('status') && distance['status'] == 'OK') {
+        setState(() {
+          _distanceMatrix = DistanceMatrix.fromApi(distance);
+        });
+        print(_distanceMatrix);
+      } else {
+        print('error receiving distance matrix');
       }
-      _tripLength = 4;
     } catch (e) {
       print(e);
+    } finally {
+      setState(() {
+        _loadingDistance = false;
+      });
     }
   }
 
@@ -310,9 +320,24 @@ class _HomePageState extends State<HomePage> {
               ),
               Expanded(child: SizedBox()),
               Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Text('3 min', style: TextStyle(fontSize: 20)),
-              ),
+                  padding: const EdgeInsets.only(right: 16),
+                  child: _loadingDistance
+                      ? SizedBox(
+                          width: 25,
+                          height: 25,
+                          child: CircularProgressIndicator(
+                            backgroundColor: MainTheme.textBackgroundLite,
+                            valueColor:
+                                AlwaysStoppedAnimation(Color(0x449E9E9E)),
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          _distanceMatrix != null
+                              ? _distanceMatrix.durationText
+                              : '',
+                          style: TextStyle(fontSize: 20),
+                        )),
             ],
           ),
           Container(
@@ -384,32 +409,37 @@ class _HomePageState extends State<HomePage> {
             child: ObButton(
               text: 'Accept Job',
               onPressed: () async {
-                if (_isAccepting) return;
+                try {
+                  if (_isAccepting) return;
 
-                setState(() {
-                  _isAccepting = true;
-                });
+                  setState(() {
+                    _isAccepting = true;
+                  });
 
-                Position position = await LocationService.getCurrentLocation();
-                bool accepted = await _tripService.acceptJob(
-                    position.latitude, position.longitude);
-                if (!accepted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    backgroundColor: Colors.red[400],
-                    content: Text(
-                      'Trip not accepted.',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                    duration: Duration(seconds: 3),
-                  ));
-                  _pageState = HomeState.accepting;
-                } else {
-                  _pageState = HomeState.pickUp;
-                  _timer?.cancel();
+                  Position position =
+                      await LocationService.getCurrentLocation();
+                  bool accepted = await _tripService.acceptJob(
+                      position.latitude, position.longitude);
+                  if (!accepted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      backgroundColor: Colors.red[400],
+                      content: Text(
+                        'Trip not accepted.',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                      duration: Duration(seconds: 3),
+                    ));
+                    _pageState = HomeState.accepting;
+                  } else {
+                    _pageState = HomeState.pickUp;
+                    _timer?.cancel();
+                  }
+                  setState(() {
+                    _isAccepting = false;
+                  });
+                } catch (e) {
+                  print(e);
                 }
-                setState(() {
-                  _isAccepting = false;
-                });
               },
             ),
           ),

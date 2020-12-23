@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_overlay_loader/flutter_overlay_loader.dart';
 import 'package:hda_driver/resources/misc/api-client.dart';
-import 'package:hda_driver/resources/misc/base-url.dart';
+import 'package:hda_driver/config/variables.dart';
 import 'package:hda_driver/routes/constants.dart';
 import 'package:hda_driver/screen-arguments/otp-verify-arguments.dart';
 import 'package:hda_driver/services/identity-service.dart';

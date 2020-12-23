@@ -1,3 +1,4 @@
+import 'package:hda_driver/config/variables.dart';
 import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -69,14 +70,14 @@ class LocationService {
 
   static Future getDistanceTo(HdaLocation.Location destination) async {
     Position here = await LocationService.getCurrentLocation();
-    String key = 'AIzaSyDuoPb3Do5LEqOf6TuMSr8YUOc5UplPi2s';
-    String url = 'maps.googleapis.com';
-    String path = '/maps/api/distancematrix/json';
+
     var res = await http.get(Uri.https(
-      url,
-      path,
+      distanceMatrixUrl,
+      distanceMatrixPath,
       {
-        'key': key,
+        'key': distanceMatrixKey,
+        'departure_time': 'now',
+        'mode': 'driving',
         'units': 'metric',
         'origins': '${here.latitude},${here.longitude}',
         'destinations': '${destination.latitude},${destination.longitude}',

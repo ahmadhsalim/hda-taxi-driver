@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as fileUtil;
-import 'package:hda_driver/resources/misc/base-url.dart';
+import 'package:hda_driver/config/variables.dart';
 import 'package:path_provider/path_provider.dart';
 
 typedef void OnDownloadProgressCallback(int receivedBytes, int totalBytes);

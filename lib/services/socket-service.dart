@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:hda_driver/resources/misc/base-url.dart';
+import 'package:hda_driver/config/variables.dart';
 import 'package:hda_driver/services/service-locator.dart';
 import 'package:rxdart/rxdart.dart';
 

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:hda_driver/resources/misc/api-client.dart';
-import 'package:hda_driver/resources/misc/base-url.dart';
+import 'package:hda_driver/config/variables.dart';
 import 'package:hda_driver/resources/misc/paged-collection.dart';
 import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/service-locator.dart';

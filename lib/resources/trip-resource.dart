@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:hda_driver/models/trip.dart';
 import 'package:hda_driver/resources/misc/abstract-resource.dart';
 import 'package:http/http.dart';
@@ -12,63 +10,61 @@ class TripResource extends AbstractResource {
   final Function fromJson = Trip.fromJson;
 
   Future acceptJob(int id, double latitude, double longitude) async {
-    Response res = await client.put(
-      Uri.http(getUrlPrefix(), baseUrl + "$url/$id/accept"),
-      body: {'latitude': latitude, 'longitude': longitude},
+    var res = await httpPut(
+      "$url/$id/accept",
+      data: {'latitude': latitude, 'longitude': longitude},
     );
 
-    if (res.statusCode == 200) return true;
-    return false;
+    if (res == null) return false;
+    return true;
   }
 
   Future missed(int id) async {
-    Response res = await client.put(
-      Uri.http(getUrlPrefix(), baseUrl + "$url/$id/missed"),
+    Response res = await httpPut(
+      "$url/$id/missed",
     );
 
-    if (res.statusCode == 200) return true;
-    return false;
+    if (res == null) return false;
+    return true;
   }
 
   Future cancel(int id) async {
-    Response res = await client.put(
-      Uri.http(getUrlPrefix(), baseUrl + "$url/$id/cancel"),
+    Response res = await httpPut(
+      "$url/$id/cancel",
     );
 
-    if (res.statusCode == 200) return true;
-    return false;
+    if (res == null) return false;
+    return true;
   }
 
   Future pickUp(int id) async {
-    Response res = await client.put(
-      Uri.http(getUrlPrefix(), baseUrl + "$url/$id/pick-up"),
+    Response res = await httpPut(
+      "$url/$id/pick-up",
     );
 
-    if (res.statusCode == 200) return true;
-    return false;
+    if (res == null) return false;
+    return true;
   }
 
   Future complete(int id) async {
-    Response res = await client.put(
-      Uri.http(getUrlPrefix(), baseUrl + "$url/$id/complete"),
+    Response res = await httpPut(
+      "$url/$id/complete",
     );
 
-    if (res.statusCode == 200) return true;
-    return false;
+    if (res == null) return false;
+    return true;
   }
 
   Future rateCustomer(int id, int rating, String comments) async {
-    Response res = await client.put(
-      Uri.http(getUrlPrefix(), baseUrl + "$url/$id/rate-customer"),
-      body: json.encode(
-        {
-          'rating': rating.toString(),
-          'additionalComments': comments,
-        },
-      ),
+    var res = await httpPut(
+      "$url/$id/rate-customer",
+      data: {
+        'rating': rating.toString(),
+        'additionalComments': comments,
+      },
     );
 
-    if (res.statusCode == 200) return true;
-    return false;
+    if (res == null) return false;
+    return true;
   }
 }
