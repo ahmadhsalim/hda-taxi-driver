@@ -329,7 +329,7 @@ class _HomePageState extends State<HomePage> {
                             backgroundColor: MainTheme.textBackgroundLite,
                             valueColor:
                                 AlwaysStoppedAnimation(Color(0x449E9E9E)),
-                            strokeWidth: 2,
+                            strokeWidth: 3,
                           ),
                         )
                       : Text(
@@ -418,8 +418,15 @@ class _HomePageState extends State<HomePage> {
 
                   Position position =
                       await LocationService.getCurrentLocation();
-                  bool accepted = await _tripService.acceptJob(
-                      position.latitude, position.longitude);
+                  bool accepted = await _tripService.acceptJob({
+                    'latitude': position.latitude.toString(),
+                    'longitude': position.longitude.toString(),
+                    'distanceValue': _distanceMatrix?.distanceValue,
+                    'distanceText': _distanceMatrix?.distanceText,
+                    'durationValue': _distanceMatrix?.durationValue,
+                    'durationText': _distanceMatrix?.durationText,
+                  });
+
                   if (!accepted) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       backgroundColor: Colors.red[400],

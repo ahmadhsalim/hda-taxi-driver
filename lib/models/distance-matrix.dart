@@ -61,4 +61,16 @@ class DistanceMatrix {
       return null;
     }
   }
+
+  Map<String, dynamic> toJson() => {
+        'destinationAddress': destinationAddress,
+        'originAddress': originAddress,
+        'distanceValue': distanceValue,
+        'distanceText': distanceText,
+        'durationValue': durationValue,
+        'durationText': durationText,
+        'durationInTrafficValue': durationInTrafficValue,
+        'durationInTrafficText': durationInTrafficText,
+        'status': status
+      };
 }
