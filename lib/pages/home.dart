@@ -58,6 +58,7 @@ class _HomePageState extends State<HomePage> {
   double _totalMissed = 0.0;
   double _totalCompleted = 0.0;
   double _averageRating = 0.0;
+  String _customerRating = '';
 
   HomeState _pageState = HomeState.offline;
   Timer _timer;
@@ -96,6 +97,7 @@ class _HomePageState extends State<HomePage> {
     var data = Map<String, dynamic>.from(json.decode(event));
     if (data.containsKey('channel') && data['channel'] == 'trip-request') {
       setState(() {
+        _customerRating = data['customerRating'];
         _distanceMatrix = null;
       });
       await _loadTrip(data['tripId']);
@@ -310,7 +312,7 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(width: 16),
               Text(
-                '4.9',
+                _customerRating ?? '',
                 style: TextStyle(fontSize: 15, color: Color(0xFF707070)),
               ),
               Padding(
