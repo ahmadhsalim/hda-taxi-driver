@@ -1,6 +1,8 @@
 import 'package:hda_driver/models/driver.dart';
+import 'package:hda_driver/models/trip-action.dart';
 import 'package:hda_driver/models/vehicle.dart';
 import 'package:hda_driver/resources/misc/abstract-resource.dart';
+import 'package:hda_driver/resources/misc/paged-collection.dart';
 import 'package:hda_driver/resources/misc/resource-collection.dart';
 
 class DriverResource extends AbstractResource {
@@ -18,6 +20,13 @@ class DriverResource extends AbstractResource {
         headers: {'hda-firebase-token': firebaseToken});
 
     return fromJson(res);
+  }
+
+  Future<PagedCollection> myHistory({List<String> include}) async {
+    var res = await httpGet("$url/me/history",
+        params: {"include": include?.join(",")});
+
+    return PagedCollection.fromJson(res, TripAction.fromJson);
   }
 
   Future getStats() {

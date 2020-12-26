@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hda_driver/pages/add-vehicle.dart';
 import 'package:hda_driver/pages/edit-profile.dart';
+import 'package:hda_driver/pages/history.dart';
 import 'package:hda_driver/pages/home.dart';
 import 'package:hda_driver/pages/legal-documents.dart';
 import 'package:hda_driver/pages/otpVerify.dart';
@@ -27,6 +28,8 @@ class HdaRouter {
         return MaterialPageRoute(builder: (_) => EditProfilePage());
       case signUpRoute:
         return MaterialPageRoute(builder: (_) => SignUpPage());
+      case historyRoute:
+        return MaterialPageRoute(builder: (_) => HistoryPage());
       case signInRoute:
         final SignInArguments args = settings.arguments;
         String message;

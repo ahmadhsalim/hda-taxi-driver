@@ -1,6 +1,7 @@
 import 'package:hda_driver/models/customer.dart';
 import 'package:hda_driver/models/driver.dart';
 import 'package:hda_driver/models/location.dart';
+import 'package:hda_driver/models/trip-charge.dart';
 import 'package:hda_driver/models/vehicle-type.dart';
 import 'package:hda_driver/services/location-service.dart';
 
@@ -16,6 +17,7 @@ class Trip {
   Location start;
   VehicleType vehicleType;
   List<Location> dropOffs = <Location>[];
+  List<TripCharge> charges = <TripCharge>[];
 
   Trip({
     this.id,
@@ -29,6 +31,7 @@ class Trip {
     this.start,
     this.vehicleType,
     this.dropOffs,
+    this.charges,
   });
 
   setStart(Location location) {
@@ -69,6 +72,11 @@ class Trip {
         dropOffs: json['dropOffs'] is List
             ? (json['dropOffs'] as List).map((i) {
                 return Location.fromJson(i);
+              }).toList()
+            : [],
+        charges: json['charges'] is List
+            ? (json['charges'] as List).map((i) {
+                return TripCharge.fromJson(i);
               }).toList()
             : [],
       );

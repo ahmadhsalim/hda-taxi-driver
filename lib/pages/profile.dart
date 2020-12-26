@@ -75,7 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
       Divider(),
       ListTile(
         onTap: () {
-          print('History coming soon.');
+          Navigator.pushNamed(context, historyRoute);
         },
         trailing: Icon(Icons.chevron_right),
         title: Text(
