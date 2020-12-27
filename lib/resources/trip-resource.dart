@@ -64,7 +64,7 @@ class TripResource extends AbstractResource {
       },
     );
 
-    if (res == null) return false;
-    return true;
+    if (res != null) return true;
+    return false;
   }
 }

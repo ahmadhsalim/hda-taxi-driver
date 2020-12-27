@@ -135,7 +135,7 @@ class _HomePageState extends State<HomePage> {
     var stats = await _driverResource.getStats();
     setState(() {
       _earnedToday = double.parse(stats['earnedtoday']) / 100;
-      _averageRating = double.parse(stats['averaterating']);
+      _averageRating = double.parse(stats['averagerating']);
       _totalCompleted = double.parse(stats['totalcompleted']);
       _totalMissed = double.parse(stats['totalmissed']);
     });

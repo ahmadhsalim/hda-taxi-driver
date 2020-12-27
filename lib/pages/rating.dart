@@ -76,10 +76,10 @@ class _RatingPageState extends State<RatingPage> {
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.white,
-          leading: IconButton(
-              color: Colors.black,
-              icon: Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context)),
+          // leading: IconButton(
+          //     color: Colors.black,
+          //     icon: Icon(Icons.arrow_back),
+          //     onPressed: () => Navigator.pop(context)),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [

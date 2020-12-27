@@ -9,6 +9,7 @@ class ObButton extends StatelessWidget {
   final Color textColor;
   final Color disabledColor;
   final bool disabled;
+  final bool small;
   final FontWeight fontWeight;
 
   ObButton({
@@ -18,6 +19,7 @@ class ObButton extends StatelessWidget {
     this.textColor,
     this.disabled = false,
     this.filled = true,
+    this.small = false,
     this.disabledColor = const Color(0xFFE9E9EB),
     this.fontWeight = FontWeight.w600,
   });
@@ -25,7 +27,7 @@ class ObButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-        height: 56,
+        height: small ? 36 : 56,
         child: FlatButton(
           onPressed: disabled ? null : onPressed,
           disabledColor: filled ? disabledColor : Colors.transparent,
@@ -35,12 +37,14 @@ class ObButton extends StatelessWidget {
           ),
           color: filled ? color : Colors.transparent,
           textColor: textColor == null
-              ? filled ? Colors.white : Colors.black
+              ? filled
+                  ? Colors.white
+                  : Colors.black
               : textColor,
           disabledTextColor: filled ? Colors.black : Colors.grey.shade600,
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.all(small ? 6 : 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(13),
+            borderRadius: BorderRadius.circular(small ? 5 : 13),
           ),
         ));
   }

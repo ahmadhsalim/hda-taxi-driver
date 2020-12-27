@@ -2,42 +2,45 @@ import 'package:hda_driver/models/customer.dart';
 import 'package:hda_driver/models/driver.dart';
 import 'package:hda_driver/models/trip.dart';
 
-class TripCharge {
+class CustomerRating {
   int id;
-  int charge;
+  int rating;
+  String additionalComments;
   int serviceProviderId;
   int tripId;
-  int driverId;
   int customerId;
+  int ratedById;
   Trip trip;
-  Driver driver;
+  Driver ratedBy;
   Customer customer;
   DateTime createdAt;
 
-  TripCharge({
+  CustomerRating({
     this.id,
-    this.charge,
+    this.rating,
+    this.additionalComments,
     this.serviceProviderId,
     this.tripId,
-    this.driverId,
     this.customerId,
+    this.ratedById,
     this.trip,
-    this.driver,
+    this.ratedBy,
     this.customer,
     this.createdAt,
   });
 
-  static TripCharge fromJson(Map<String, dynamic> json) {
+  static CustomerRating fromJson(Map<String, dynamic> json) {
     if (json != null) {
-      return TripCharge(
+      return CustomerRating(
         id: json['id'],
+        rating: json['rating'],
+        additionalComments: json['additionalComments'],
         tripId: json['tripId'],
-        driverId: json['driverId'],
         customerId: json['customerId'],
+        ratedById: json['ratedById'],
         serviceProviderId: json['serviceProviderId'],
-        charge: json['charge'],
         trip: Trip.fromJson(json['trip']),
-        driver: Driver.fromJson(json['driver']),
+        ratedBy: Driver.fromJson(json['ratedBy']),
         customer: Customer.fromJson(json['customer']),
         createdAt: json['createdAt'] == null
             ? null

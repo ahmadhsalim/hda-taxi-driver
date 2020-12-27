@@ -22,9 +22,11 @@ class DriverResource extends AbstractResource {
     return fromJson(res);
   }
 
-  Future<PagedCollection> myHistory({List<String> include}) async {
-    var res = await httpGet("$url/me/history",
-        params: {"include": include?.join(",")});
+  Future<PagedCollection<TripAction>> myHistory({List<String> include}) async {
+    var res = await httpGet("$url/me/history", params: {
+      "include": include?.join(","),
+      "filter": "action in cancelled,completed,missed"
+    });
 
     return PagedCollection.fromJson(res, TripAction.fromJson);
   }

@@ -13,7 +13,19 @@
             "name": "Andoid 2",
             "request": "launch",
             "type": "dart",
+            "deviceId": "emulator-5556"
+        },
+        {
+            "name": "Andoid 1",
+            "request": "launch",
+            "type": "dart",
             "deviceId": "emulator-5554"
+        },
+        {
+            "name": "Android Phone",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "RF8M81MEEXY"
         }
     ]
 }
