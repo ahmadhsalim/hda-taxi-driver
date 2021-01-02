@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hda_driver/helpers/sentence-case.dart';
+import 'package:hda_driver/main.dart';
 import 'package:hda_driver/models/trip-action.dart';
+import 'package:hda_driver/models/trip.dart';
 import 'package:hda_driver/resources/driver-resource.dart';
 import 'package:hda_driver/resources/misc/paged-collection.dart';
+import 'package:hda_driver/routes/constants.dart';
+import 'package:hda_driver/screen-arguments/rating-arguments.dart';
+import 'package:hda_driver/services/trip-service.dart';
 import 'package:hda_driver/widgets/animation-box.dart';
 import 'package:hda_driver/widgets/ob-button.dart';
 import 'package:intl/intl.dart';
@@ -19,32 +24,55 @@ class HistoryPage extends StatefulWidget {
   _HistoryPageState createState() => _HistoryPageState();
 }
 
-class _HistoryPageState extends State<HistoryPage> {
+class _HistoryPageState extends State<HistoryPage> with RouteAware {
   final DriverResource _resource = DriverResource();
   bool _loading = true;
   PagedCollection<TripAction> _collection;
   final NumberFormat nf = NumberFormat.currency(name: 'MVR ');
+  int _loadingId;
 
   @override
   initState() {
     super.initState();
+    loadHistory();
+  }
 
-    _resource.myHistory(include: [
-      'trip.start,trip.dropOffs,trip.charges,trip.customerRating'
-    ]).then((value) {
+  loadHistory() async {
+    try {
       setState(() {
-        _collection = value;
+        _loading = true;
       });
-    }).whenComplete(() {
+      PagedCollection<TripAction> res = await _resource.myHistory(include: [
+        'trip.start,trip.dropOffs,trip.charges,trip.customerRating'
+      ]);
+      setState(() {
+        _collection = res;
+      });
+    } finally {
       setState(() {
         _loading = false;
       });
-    });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context));
   }
 
   @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     super.dispose();
+  }
+
+  @override
+  void didPushNext() {}
+
+  @override
+  void didPopNext() {
+    loadHistory();
   }
 
   Widget getEmptyScreen() {
@@ -81,6 +109,23 @@ class _HistoryPageState extends State<HistoryPage> {
     }
 
     return nf.format(charges / 100);
+  }
+
+  void goToRating(Trip trip) async {
+    setState(() {
+      _loadingId = trip.id;
+    });
+    TripService tripService = TripService();
+    await tripService.loadTrip(trip.id);
+
+    setState(() {
+      _loadingId = null;
+    });
+    Navigator.pushNamed(
+      context,
+      ratingRoute,
+      arguments: RatingArguments(tripService),
+    );
   }
 
   Widget getList() {
@@ -152,24 +197,28 @@ class _HistoryPageState extends State<HistoryPage> {
                                           tripAction.trip.dropOffs[0].name,
                                           overflow: TextOverflow.ellipsis),
                                     ),
-                                    if (tripAction.trip.customerRating != null)
+                                    if (tripAction.action != 'completed' ||
+                                        tripAction.trip.customerRating != null)
                                       Text(getTripCharge(tripAction)),
                                   ],
                                 )
                               ],
                             ),
                           ),
-                          if (tripAction.trip.customerRating == null)
+                          if (tripAction.action == 'completed' &&
+                              tripAction.trip.customerRating == null)
                             Container(
                               alignment: Alignment.center,
                               padding: const EdgeInsets.only(left: 4),
-                              child: ObButton(
-                                text: 'Rate',
-                                small: true,
-                                onPressed: () {
-                                  print('rated');
-                                },
-                              ),
+                              child: _loadingId == tripAction.tripId
+                                  ? CircularProgressIndicator()
+                                  : ObButton(
+                                      text: 'Rate',
+                                      small: true,
+                                      onPressed: () {
+                                        goToRating(tripAction.trip);
+                                      },
+                                    ),
                             )
                         ],
                       ),

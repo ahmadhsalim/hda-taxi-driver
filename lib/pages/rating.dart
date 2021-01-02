@@ -97,11 +97,15 @@ class _RatingPageState extends State<RatingPage> {
                       ),
                     ),
                     onTap: () {
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        homeRoute,
-                        (Route<dynamic> route) => false,
-                      );
+                      bool canPop = Navigator.canPop(context);
+                      if (canPop) {
+                        Navigator.pop(context);
+                      } else {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          homeRoute,
+                        );
+                      }
                     },
                   ),
                 ),

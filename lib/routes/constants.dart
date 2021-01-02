@@ -10,3 +10,4 @@ const String documentUploadRoute = '/document-upload';
 const String vehicleReviewingRoute = '/vehicle-reviewing';
 const String ratingRoute = '/rating';
 const String historyRoute = '/history';
+const String chatRoute = '/chat';

@@ -14,6 +14,7 @@ import 'package:hda_driver/models/location.dart';
 import 'package:hda_driver/models/trip.dart';
 import 'package:hda_driver/resources/driver-resource.dart';
 import 'package:hda_driver/routes/constants.dart';
+import 'package:hda_driver/screen-arguments/chat-arguments.dart';
 import 'package:hda_driver/screen-arguments/rating-arguments.dart';
 import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/location-service.dart';
@@ -523,7 +524,14 @@ class _HomePageState extends State<HomePage> {
                   width: 34,
                   height: 34,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(context, chatRoute,
+                      arguments: ChatArguments(
+                        trip,
+                        trip.customer,
+                        trip.customer.profilePhotoFile,
+                      ));
+                },
               ),
             ],
           ),

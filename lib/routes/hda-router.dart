@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hda_driver/pages/add-vehicle.dart';
+import 'package:hda_driver/pages/chat.dart';
 import 'package:hda_driver/pages/edit-profile.dart';
 import 'package:hda_driver/pages/history.dart';
 import 'package:hda_driver/pages/home.dart';
@@ -11,6 +12,7 @@ import 'package:hda_driver/pages/signIn.dart';
 import 'package:hda_driver/pages/signUp.dart';
 import 'package:hda_driver/pages/vehicle-form.dart';
 import 'package:hda_driver/pages/vehicle-reviewing.dart';
+import 'package:hda_driver/screen-arguments/chat-arguments.dart';
 import 'package:hda_driver/screen-arguments/otp-verify-arguments.dart';
 import 'package:hda_driver/screen-arguments/rating-arguments.dart';
 import 'package:hda_driver/screen-arguments/sign-in-arguments.dart';
@@ -55,6 +57,15 @@ class HdaRouter {
         final RatingArguments args = settings.arguments;
         return MaterialPageRoute(
             builder: (_) => RatingPage(tripService: args.tripService));
+      case chatRoute:
+        final ChatArguments args = settings.arguments;
+        return MaterialPageRoute(
+          builder: (_) => ChatPage(
+            trip: args.trip,
+            customer: args.customer,
+            customerPhoto: args.customerPhoto,
+          ),
+        );
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(
