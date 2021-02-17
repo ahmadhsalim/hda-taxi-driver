@@ -54,7 +54,7 @@ class _VehicleReviewingPageState extends State<VehicleReviewingPage> {
               Navigator.pushNamedAndRemoveUntil(
                   context, vehicleFormRoute, (Route<dynamic> route) => false);
             } else {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              Scaffold.of(context).showSnackBar(SnackBar(
                 content: Text(
                   'Unable to load. Try again.',
                   style: TextStyle(color: Colors.white, fontSize: 16),

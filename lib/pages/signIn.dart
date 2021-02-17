@@ -213,7 +213,7 @@ class _SignInPageState extends State<SignInPage> {
 
     if (widget.message != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        Scaffold.of(context).showSnackBar(SnackBar(
           content: Text(
             widget.message,
             style: TextStyle(color: Colors.white, fontSize: 16),

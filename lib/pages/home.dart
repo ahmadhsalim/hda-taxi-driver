@@ -431,7 +431,7 @@ class _HomePageState extends State<HomePage> {
                   });
 
                   if (!accepted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    Scaffold.of(context).showSnackBar(SnackBar(
                       backgroundColor: Colors.red[400],
                       content: Text(
                         'Trip not accepted.',
@@ -503,7 +503,7 @@ class _HomePageState extends State<HomePage> {
                   if (await canLaunch(url)) {
                     await launch(url);
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    Scaffold.of(context).showSnackBar(SnackBar(
                       content: Text(
                         'Unable to open dialer.',
                         style: TextStyle(color: Colors.white, fontSize: 16),

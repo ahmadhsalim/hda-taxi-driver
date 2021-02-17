@@ -6,29 +6,17 @@ import 'identity-service.dart';
 
 class FirebaseMessagingService {
   Identity identity = getIt<Identity>();
+  FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+
   static TripResource tripResource;
-
-  FirebaseMessaging firebaseMessaging;
-
-  FirebaseMessagingService() {
-    firebaseMessaging = FirebaseMessaging();
-  }
 
   static void tripRequested(Map<String, dynamic> data) {
     print([data, 'triipi-requestedddd']);
   }
 
-  static Future<dynamic> backgroundMessageHandler(
+  static Future<dynamic> myBackgroundMessageHandler(
       Map<String, dynamic> message) async {
-    if (message.containsKey('notification')) {
-      // var notification = message['notification'];
-      // switch (notification['channel']) {
-      //   case 'trip-request':
-      //     tripRequested(Map<String, dynamic>.from(notification));
-      //     break;
-      //   default:
-      // }
-    }
+    if (message.containsKey('notification')) {}
 
     // if (message.containsKey('notification')) {
     //   // Handle notification message
@@ -44,6 +32,7 @@ class FirebaseMessagingService {
         print("onMessage: $message");
         // _showItemDialog(message);
       },
+      onBackgroundMessage: myBackgroundMessageHandler,
       onLaunch: (Map<String, dynamic> message) async {
         print("onLaunch: $message");
         // _navigateToItemDetail(message);
@@ -52,7 +41,6 @@ class FirebaseMessagingService {
         print("onResume: $message");
         // _navigateToItemDetail(message);
       },
-      onBackgroundMessage: backgroundMessageHandler,
     );
     firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(

@@ -9,13 +9,13 @@ import 'package:hda_driver/services/service-locator.dart';
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
   await setupServiceLocator();
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(HdaApp());
+  runApp(HdaDriver());
 }
 
-class HdaApp extends StatelessWidget {
+class HdaDriver extends StatelessWidget {
   static AnalyticsService analytics = getIt<AnalyticsService>();
   static FirebaseAnalyticsObserver analyticsObserver =
       FirebaseAnalyticsObserver(analytics: analytics);
