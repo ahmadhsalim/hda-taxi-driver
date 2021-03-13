@@ -253,7 +253,7 @@ class _SignUpPageState extends State<SignUpPage> {
           title: Text(title),
           content: Text(text),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text('Ok'),
               onPressed: () {
                 Navigator.of(context).pop();

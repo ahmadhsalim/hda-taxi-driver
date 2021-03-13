@@ -1,79 +1,33 @@
 {
   "project_info": {
-    "project_number": "108522620921",
-    "firebase_url": "https://taxi-260616.firebaseio.com",
-    "project_id": "taxi-260616",
-    "storage_bucket": "taxi-260616.appspot.com"
+    "project_number": "963627608113",
+    "project_id": "taxi-driver-4b5bc",
+    "storage_bucket": "taxi-driver-4b5bc.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:108522620921:android:b01c545e057bc91ec8df28",
-        "android_client_info": {
-          "package_name": "com.obinov.hda_app"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "108522620921-qhpoof00k9vuh4pncrua4me863phnqvk.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.obinov.hda_app",
-            "certificate_hash": "ea09f62eab0c978dc1783e468ceb573c24da30d3"
-          }
-        },
-        {
-          "client_id": "108522620921-nf1qs3o4qs8pap8qdvr99sqkruk4fmn1.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDuoPb3Do5LEqOf6TuMSr8YUOc5UplPi2s"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "108522620921-nf1qs3o4qs8pap8qdvr99sqkruk4fmn1.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:108522620921:android:71e17bb5f2655a12c8df28",
+        "mobilesdk_app_id": "1:963627608113:android:b2e87c7bbd0fa3551c4d10",
         "android_client_info": {
           "package_name": "com.obinov.hda_driver"
         }
       },
       "oauth_client": [
         {
-          "client_id": "108522620921-93n13i909kdium1s6d8iaf1gkcrad2cr.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.obinov.hda_driver",
-            "certificate_hash": "ea09f62eab0c978dc1783e468ceb573c24da30d3"
-          }
-        },
-        {
-          "client_id": "108522620921-nf1qs3o4qs8pap8qdvr99sqkruk4fmn1.apps.googleusercontent.com",
+          "client_id": "963627608113-13cealv9oipgnoa3f7qor5cptkqsqim7.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDuoPb3Do5LEqOf6TuMSr8YUOc5UplPi2s"
+          "current_key": "AIzaSyDSGSkjuAV-dw-ZG6G14A2TUq2bUUQIwy8"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "108522620921-nf1qs3o4qs8pap8qdvr99sqkruk4fmn1.apps.googleusercontent.com",
+              "client_id": "963627608113-13cealv9oipgnoa3f7qor5cptkqsqim7.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

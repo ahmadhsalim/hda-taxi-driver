@@ -28,24 +28,63 @@ class ObButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
         height: small ? 36 : 56,
-        child: FlatButton(
+        child: TextButton(
           onPressed: disabled ? null : onPressed,
-          disabledColor: filled ? disabledColor : Colors.transparent,
-          child: Text(
-            text,
-            style: TextStyle(fontWeight: fontWeight, fontSize: 16),
+          style: ButtonStyle(
+            padding: MaterialStateProperty.all<EdgeInsets>(
+              EdgeInsets.all(small ? 6 : 16),
+            ),
+            shape: MaterialStateProperty.all<OutlinedBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(small ? 5 : 13),
+              ),
+            ),
+            overlayColor: MaterialStateProperty.all<Color>(
+              filled
+                  ? Colors.white.withOpacity(0.12)
+                  : Colors.grey.withOpacity(0.12),
+            ),
+            backgroundColor: MaterialStateProperty.resolveWith<Color>(
+              (Set<MaterialState> states) {
+                if (states.contains(MaterialState.disabled))
+                  return filled ? disabledColor : Colors.transparent;
+                return filled
+                    ? color
+                    : Colors.transparent; // Defer to the widget's default.
+              },
+            ),
+            foregroundColor: MaterialStateProperty.resolveWith<Color>(
+                (Set<MaterialState> states) {
+              if (states.contains(MaterialState.disabled)) {
+                return Colors.grey.shade600;
+              } else {
+                return textColor == null
+                    ? filled
+                        ? Colors.white
+                        : Colors.black
+                    : textColor;
+              }
+            }),
+            // textStyle: MaterialStateProperty.resolveWith<TextStyle>(
+            //   (Set<MaterialState> states) {
+            //     return TextStyle(
+            //       fontWeight: fontWeight,
+            //       fontSize: 16,
+            //     );
+            //   },
+            textStyle: MaterialStateProperty.all<TextStyle>(
+              TextStyle(fontWeight: fontWeight, fontSize: 16),
+            ),
           ),
-          color: filled ? color : Colors.transparent,
-          textColor: textColor == null
-              ? filled
-                  ? Colors.white
-                  : Colors.black
-              : textColor,
-          disabledTextColor: filled ? Colors.black : Colors.grey.shade600,
-          padding: EdgeInsets.all(small ? 6 : 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(small ? 5 : 13),
-          ),
+          // disabledColor: filled ? disabledColor : Colors.transparent,
+          child: Text(text),
+          // color: filled ? color : Colors.transparent,
+          // textColor: textColor == null
+          //     ? filled
+          //         ? Colors.white
+          //         : Colors.black
+          //     : textColor,
+          // disabledTextColor: filled ? Colors.black : Colors.grey.shade600,
         ));
   }
 }

@@ -195,7 +195,7 @@ class _SignInPageState extends State<SignInPage> {
           title: Text(title),
           content: Text(text),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text('Ok'),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -213,7 +213,7 @@ class _SignInPageState extends State<SignInPage> {
 
     if (widget.message != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Scaffold.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
             widget.message,
             style: TextStyle(color: Colors.white, fontSize: 16),

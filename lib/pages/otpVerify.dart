@@ -178,7 +178,7 @@ class _OtpVerifyPageState extends State<OtpVerifyPage> {
           title: Text(title),
           content: Text(text),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text('Ok'),
               onPressed: () {
                 Navigator.of(context).pop();

@@ -163,7 +163,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         padding: const EdgeInsets.only(top: 16),
         child: ObButton(
           text: 'Update',
-          color: Color(0xFFE9E9EB),
+          filled: true,
           fontWeight: FontWeight.w500,
           disabled: isUntouched,
           onPressed: () async {
@@ -180,7 +180,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 bool success = await update(name, mobile, email);
 
                 if (success) {
-                  Scaffold.of(context).showSnackBar(SnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(
                       'Updated',
                       style: TextStyle(color: Colors.white, fontSize: 16),
@@ -188,7 +188,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     duration: Duration(seconds: 3),
                   ));
                 } else {
-                  Scaffold.of(context).showSnackBar(SnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(
                       'Update failed.',
                       style: TextStyle(color: Colors.white, fontSize: 16),

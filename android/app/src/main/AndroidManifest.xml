@@ -8,7 +8,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDuoPb3Do5LEqOf6TuMSr8YUOc5UplPi2s" />
+            android:value="AIzaSyDSGSkjuAV-dw-ZG6G14A2TUq2bUUQIwy8" />
 
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
