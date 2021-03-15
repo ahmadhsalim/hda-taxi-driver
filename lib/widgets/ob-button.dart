@@ -48,9 +48,7 @@ class ObButton extends StatelessWidget {
               (Set<MaterialState> states) {
                 if (states.contains(MaterialState.disabled))
                   return filled ? disabledColor : Colors.transparent;
-                return filled
-                    ? color
-                    : Colors.transparent; // Defer to the widget's default.
+                return filled ? color : Colors.transparent;
               },
             ),
             foregroundColor: MaterialStateProperty.resolveWith<Color>(
@@ -65,26 +63,11 @@ class ObButton extends StatelessWidget {
                     : textColor;
               }
             }),
-            // textStyle: MaterialStateProperty.resolveWith<TextStyle>(
-            //   (Set<MaterialState> states) {
-            //     return TextStyle(
-            //       fontWeight: fontWeight,
-            //       fontSize: 16,
-            //     );
-            //   },
             textStyle: MaterialStateProperty.all<TextStyle>(
               TextStyle(fontWeight: fontWeight, fontSize: 16),
             ),
           ),
-          // disabledColor: filled ? disabledColor : Colors.transparent,
           child: Text(text),
-          // color: filled ? color : Colors.transparent,
-          // textColor: textColor == null
-          //     ? filled
-          //         ? Colors.white
-          //         : Colors.black
-          //     : textColor,
-          // disabledTextColor: filled ? Colors.black : Colors.grey.shade600,
         ));
   }
 }
