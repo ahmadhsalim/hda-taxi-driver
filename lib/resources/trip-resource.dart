@@ -67,4 +67,10 @@ class TripResource extends AbstractResource {
     if (res != null) return true;
     return false;
   }
+
+  Future<Trip> getMyCurrentTrip({include}) async {
+    var res =
+        await httpGet("$url/drivers/current/my", params: {'include': include});
+    return fromJson(res);
+  }
 }

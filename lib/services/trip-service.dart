@@ -56,6 +56,26 @@ class TripService {
     _trip.vehicleType = type;
   }
 
+  Future<Trip> loadCurrentTrip() async {
+    return await reloadTrip(
+      include: 'start,dropOffs,customer,vehicle,vehicleType.fare,charges',
+    );
+  }
+
+  Future<Trip> reloadTrip({include}) async {
+    TripResource resource = TripResource();
+    try {
+      Trip t = await resource.getMyCurrentTrip(
+        include: include,
+      );
+      if (t != null) this._trip = t;
+      return t;
+    } catch (error) {
+      print(error);
+      return null;
+    }
+  }
+
   Future<bool> acceptJob(Map<String, dynamic> distance) async {
     try {
       TripResource resource = TripResource();

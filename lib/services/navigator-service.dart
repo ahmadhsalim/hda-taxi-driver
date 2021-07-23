@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:hda_driver/models/driver.dart';
+import 'package:hda_driver/models/trip.dart';
 import 'package:hda_driver/models/vehicle.dart';
 import 'package:hda_driver/resources/driver-resource.dart';
 import 'package:hda_driver/resources/file-resource.dart';
@@ -8,6 +9,8 @@ import 'package:hda_driver/routes/constants.dart';
 import 'package:hda_driver/screen-arguments/vehicle-reviewing-arguments.dart';
 import 'package:hda_driver/services/identity-service.dart';
 import 'package:hda_driver/services/service-locator.dart';
+
+import 'trip-service.dart';
 
 Future getProfilePhoto() async {
   try {
@@ -27,6 +30,7 @@ Future getProfilePhoto() async {
 Future goToStart(BuildContext context) async {
   final DriverResource resource = DriverResource();
   final Identity identity = getIt<Identity>();
+  final TripService tripService = getIt<TripService>();
 
   try {
     ResourceCollection<Vehicle> collection = await resource.myVehicles();
@@ -34,8 +38,13 @@ Future goToStart(BuildContext context) async {
       if (collection.data[0].isActive()) {
         await identity.getCurrentDriver(forceAuth: true);
         await getProfilePhoto();
-        return Navigator.pushNamedAndRemoveUntil(
-            context, homeRoute, (Route<dynamic> route) => false);
+        Trip trip = await tripService.loadCurrentTrip();
+
+        if (trip == null)
+          return Navigator.pushNamedAndRemoveUntil(
+              context, homeRoute, (Route<dynamic> route) => false);
+        // else
+        //   goToTrip(context, trip);
       } else {
         Driver driver = await identity.getCurrentDriver(forceAuth: true);
 
